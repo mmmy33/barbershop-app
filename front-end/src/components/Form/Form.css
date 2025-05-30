@@ -1,0 +1,110 @@
+.container {
+  /* padding: 0 1rem; */
+}
+
+.custom-form {
+  width: 100%;
+  max-width: 600px;
+  min-width: 400px;
+  margin: 0 auto;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.custom-form .field {
+  margin-bottom: 1.25rem;
+}
+
+.custom-form .buttons {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.addons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.addon-item {
+  display: flex;
+  align-items: center;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.addon-item:hover {
+  background-color: #2a2a2a;
+}
+
+.addon-item input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  accent-color: #3273dc;
+  margin-right: 16px;
+}
+
+.addon-info {
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+  font-size: 0.95rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.addon-name {
+  font-weight: 600;
+  color: #f5f5f5;
+  flex: 1;
+}
+
+.addon-duration,
+.addon-price {
+  color: #ccc;
+  white-space: nowrap;
+  margin-left: 1.5rem;
+}
+
+.addon-price {
+  min-width: 60px;
+  text-align: right;
+}
+
+
+@media (max-width: 600px) {
+  .custom-form {
+    width: 100%;
+    min-width: unset;
+    max-width: unset;
+    padding: 1rem 1.25rem;
+    box-sizing: border-box;
+  }
+
+  .custom-form select {
+    width: 100%;
+  }
+
+  .custom-form .select {
+    width: 100%;
+  }
+
+  .custom-form .select select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .custom-form {
+    width: 100%;
+    max-width: 90%;
+    min-width: unset;
+    padding: 1rem;
+  }
+}
+
