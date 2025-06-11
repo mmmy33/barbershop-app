@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,7 +19,7 @@ export const LoginPage = () => {
 
       if (response.data.token) {
         localStorage.setItem('jwt', response.data.token);
-        navigate('/');
+        navigate('/main');
       }
     } catch (error) {
       setErrorMessage('Ошибка при входе. Проверьте введенные данные.');

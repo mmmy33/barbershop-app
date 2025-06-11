@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 export const RegistrationPage = () => {
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone_number, setPhone_number] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -19,7 +19,7 @@ export const RegistrationPage = () => {
     try {
       const response = await axios.post('http://127.0.0.1:8000/api/auth/register', {
         name,
-        phone,
+        phone_number,
         email,
         password,
       });
@@ -78,8 +78,8 @@ export const RegistrationPage = () => {
                 <input
                   type="tel"
                   className="input"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  value={phone_number}
+                  onChange={(e) => setPhone_number(e.target.value)}
                   required
                 />
               </div>
