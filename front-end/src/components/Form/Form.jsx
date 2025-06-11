@@ -1,15 +1,15 @@
 import { useState, useMemo } from 'react';
 import classNames from 'classnames';
-
 import './Form.css';
 
 import { barbers } from '../../api/barbers';
 import { services } from '../../api/services';
 import { additionalServices } from '../../api/additionalServices';
 
-// показывает правильную цену на сервере. не показывает выбранные доп услуги и правильную длительность (основной услуги + доп услуги)
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
-export const Form = () => {
+export const Form = ({ closeModal }) => {
   //#region useStates
   const [name, setName] = useState('');
   const [hasNameError, setHasNameError] = useState(false);
@@ -25,6 +25,11 @@ export const Form = () => {
 
   const [selectedAddons, setSelectedAddons] = useState([]);
 
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [hasDateError, setHasDateError] = useState(false);
+
+  const [selectedTime, setSelectedTime] = useState('');
+  const [hasTimeError, setHasTimeError] = useState(false);
   //#endregion useStates
 
   //#region handlers (change)
@@ -55,10 +60,9 @@ export const Form = () => {
         : [...prev, addonId]
     );
   };
-
   //#endregion
 
-  //#region handlers (submit (Errors)) / Fetch
+  //#region Submit & Fetch
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -73,6 +77,7 @@ export const Form = () => {
     setHasBarberError(!userId);
     setHasServiceError(!selectedServiceId);
 
+    if (!selectedDate || !selectedTime) return;
     if (!isValid) return;
 
     const payload = {
@@ -83,6 +88,8 @@ export const Form = () => {
       addonIds: selectedAddons,
       totalDuration,
       totalPrice,
+      date: selectedDate,
+      time: selectedTime,
     };
 
     console.log('Payload to send:', payload);
@@ -116,24 +123,24 @@ export const Form = () => {
   };
   //#endregion phone validation
 
-  //#region Memoized services
-  // Parsing '1h 10min' into minutes
+  // #region Parsing functions
+    // Parsing '1h 10min' into minutes
   const parseDurationToMinutes = (durationStr) => {
-    const hoursMatch = durationStr.match(/(\d+)h/);
-    const minsMatch = durationStr.match(/(\d+)min/);
+    const hoursMatch = durationStr.match(/(\d+)\s*h/);
+    const minsMatch = durationStr.match(/(\d+)\s*min/);
 
     const hours = hoursMatch ? parseInt(hoursMatch[1]) : 0;
     const minutes = minsMatch ? parseInt(minsMatch[1]) : 0;
 
     return hours * 60 + minutes;
   };
-
-  // Parsing '100,00 zł' into 100.00
+    // Parsing '100,00 zł' into 100.00
   const parsePrice = (priceStr) => {
     return parseFloat(priceStr.replace(',', '.').replace(' zł', '').trim());
   };
+  // #endregion Parsing functions
 
-
+  //#region Memoized services
   const selectedService = useMemo(() => {
     return services[userId]?.find(service => service.id === selectedServiceId) || null;
   }, [userId, selectedServiceId]);
@@ -145,7 +152,7 @@ export const Form = () => {
   const totalDuration = useMemo(() => {
     const base = selectedService ? parseDurationToMinutes(selectedService.duration) : 0;
     const addons = selectedAddonObjects.reduce(
-      (acc, addon) => acc + parseDurationToMinutes(addon.duration), 0
+      (acc, addon) => acc + (typeof addon.duration === 'number' ? addon.duration : parseDurationToMinutes(addon.duration)), 0
     );
     return base + addons;
   }, [selectedService, selectedAddonObjects]);
@@ -245,7 +252,7 @@ export const Form = () => {
         </div>
 
         {hasBarberError && (
-          <p className="help is-danger">Please select a user</p>
+          <p className="help is-danger">Please select a Barber</p>
         )}
       </div>
 
@@ -299,24 +306,68 @@ export const Form = () => {
                 />
                 <div className="addon-info">
                   <span className="addon-name">{addon.name}</span>
-                  <span className="addon-duration">{addon.duration} min</span>
+                  <span className="addon-duration">{addon.duration}</span>
                   <span className="addon-price">{addon.price}</span>
                 </div>
               </label>
             ))}
           </div>
         </div>
-
       )}
 
       {selectedService && (
-        <div className="box mt-4">
-          <p><strong>Total Duration:</strong> {totalDuration} min</p>
-          <p><strong>Total Price:</strong> {totalPrice} zł</p>
-        </div>
+        <>
+          <div className="field">
+            <label className="label"  htmlFor='date'>Wybierz datę</label>
+            <div className="control">
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => setSelectedDate(date)}
+                dateFormat="dd MMMM yyyy"
+                placeholderText="Kliknij, aby wybrać"
+                minDate={new Date()}
+                className="input"
+                calendarStartDay={1}
+                locale="pl"
+                id='date'
+              />
+            </div>
+          </div>
+
+          <div className="field">
+            <label className="label" htmlFor='time'>Wybierz czas</label>
+            <div className="control">
+              <div className="select is-fullwidth">
+                <select
+                  value={selectedTime} 
+                  onChange={(e) => setSelectedTime(e.target.value)}
+                  id='time'
+                >
+                  <option className='background-color' value="">Godzina</option>
+                  {[
+                    '11:00', '11:30', '12:00', '12:30',
+                    '13:00', '13:30', '14:00', '14:30',
+                    '15:00', '15:30', '16:00'
+                  ].map((time) => (
+                    <option className='background-color'  key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="box mt-4">
+            <p><strong>Total Duration:</strong> {totalDuration} min</p>
+            <p><strong>Total Price:</strong> {totalPrice} zł</p>
+          </div>
+        </>
       )}
 
       <div className="buttons">
+        <button type="button" className="button is-danger" onClick={closeModal}>
+          Close
+        </button>
+
         <button type="submit" className="button is-link">
           Submit
         </button>

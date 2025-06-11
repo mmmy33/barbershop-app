@@ -1,5 +1,5 @@
-.container {
-  /* padding: 0 1rem; */
+.background-color {
+  background: rgb(38, 48, 62)!important;  
 }
 
 .custom-form {
@@ -8,7 +8,6 @@
   min-width: 400px;
   margin: 0 auto;
   padding: 1rem;
-  box-sizing: border-box;
 }
 
 .custom-form .field {
@@ -76,8 +75,16 @@
   text-align: right;
 }
 
+.react-datepicker-wrapper {
+  width: 100%;
+}
+.react-datepicker__input-container input {
+  width: 100%;
+}
 
-@media (max-width: 600px) {
+
+/* Tablet: ≤ 1024px , > 640px */
+@media (max-width: 1024px) and (min-width: 641px) {
   .custom-form {
     width: 100%;
     min-width: unset;
@@ -97,14 +104,21 @@
   .custom-form .select select {
     width: 100%;
   }
+
+
 }
 
-@media (max-width: 900px) {
+/* Mobile: ≤ 640px */
+@media (max-width: 640px) {
   .custom-form {
     width: 100%;
-    max-width: 90%;
     min-width: unset;
     padding: 1rem;
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: space-between!important;
   }
 }
 

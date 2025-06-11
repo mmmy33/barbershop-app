@@ -1,0 +1,168 @@
+@import '../../styles/variables.css';
+
+.header-navigation {
+  color: rgb(156, 163, 175);
+  font-family: var(--font-primary);
+  font-size: 16px;
+  font-weight: 500;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 48px;
+}
+
+.nav {
+  height: 40px;
+}
+
+.nav-button {
+  padding: 8px 12px;
+}
+
+.nav-button:hover {
+  color: #FCFDFF;
+}
+
+.nav-button:not(:last-child) {
+  margin-right: 28px;
+}
+
+/* ----------------- BURGER SECTION ----------------- */
+
+.burger-container {
+  display: none;
+}
+
+.burger-button {
+  padding: 8px;
+}
+
+.burger-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.burger-menu-content {
+  background: rgba(2, 6, 10, 0.75);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.burger-menu-header {
+  background: rgba(2, 6, 10);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px;
+  border-bottom: 1px solid rgb(37, 49, 67);;
+}
+
+.burger-menu-close-button {
+  padding: 8px;
+}
+
+.burger-menu-close-icon {
+  width: 32px;
+  height: 28px;
+}
+
+.burger-menu-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.burger-menu-nav-button {
+  width: 100%;
+  color: rgb(156, 163, 175);
+
+  font-family: var(--font-primary);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 150%;
+
+  padding: 8px 12px;
+  margin: 24px 0;
+}
+
+
+/* Tablet: ≤ 1024px , > 640px */
+@media (max-width: 1024px) and (min-width: 641px) {
+  .header-navigation {
+    padding: 8px 24px
+  }
+
+  .nav-desktop {
+    display: none;
+  }
+
+  .burger-container {
+    display: block;
+  }
+
+  .burger-button-icon{
+    width: 32px;
+    height: 28px;
+  }
+}
+
+/* Mobile: ≤ 640px */
+@media (max-width: 640px) {
+  .nav-desktop {
+    display: none;
+  }
+
+  .burger-container {
+    display: block;
+  }
+  
+  .burger-button img {
+    width: 28px;
+  }
+
+  .header-navigation {
+    padding: 12px 20px;
+  }
+
+  .burger-menu-header {
+    padding: 8px 0;
+    border-bottom: 1px solid #2C2E35;
+  }
+
+  .burger-menu-logo{
+    width: 104px;
+    height: 28px;
+  }
+
+  .burger-menu-nav {
+    margin-top: 98px;
+  }
+
+  .burger-menu-content {
+    width: 390px;
+  }
+  .burger-menu-logo {
+    width: 104px;
+  }
+
+  .burger-menu-nav-button {
+    font-size: 16px;
+    padding: 8px 12px;
+    margin: 16px 0;
+  }
+
+  .burger-menu-header {
+    padding: 12px 20px;
+  }
+}
+

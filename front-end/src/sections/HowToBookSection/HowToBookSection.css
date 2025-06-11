@@ -1,0 +1,175 @@
+@import '../../styles/variables.css';
+
+.how-to-book-upper-box {
+  margin: 150px 0 160px 0;
+}
+
+.how-to-book-title {
+  color: var(--title-color);
+  font-family: var(--font-primary);
+  font-size: var(--title-font-size);
+  font-weight: var(--title-font-weight);
+  line-height: 120%;
+  margin-bottom: 60px;
+}
+
+.stepper-box {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border: 1px solid #ffffff;
+  padding: 12px 100px;
+  border-radius: 4px;
+}
+
+.step {
+  color: #e0e0e0;
+  font-family: var(--font-primary);
+  font-size: 24px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: transform 0.8s ease, background-color 0.8s ease, color 0.8s ease-in;
+  padding: 8px 16px;
+  border-radius: 4px;
+}
+
+.step.active {
+  background-color: rgba(37, 49, 67, 0.604);;
+  color: white;
+  transform: scale(1.05);
+}
+
+.step-separator {
+  color: #e0e0e0;
+  font-family: var(--font-primary);
+  font-weight: 100;
+  font-size: 38px;
+}
+
+.how-to-book-lower-box {
+  display: flex;
+}
+
+.how-to-book-image {
+  margin-right: 130px;
+}
+
+.bottom-margin {
+  margin-bottom: 24px;
+}
+
+.how-to-book-text {
+  color: var(--subtitle-color);
+  font-family: var(--font-secondary);
+  font-size: var(--subtitle-font-size);
+  font-weight: var(--subtitle-font-weight);
+  line-height: 150%;
+}
+
+/* Tablet: ≤ 1024px , > 640px */
+@media (max-width: 1024px) and (min-width: 641px) {
+  .desktop-stepper {
+    display: flex;
+  }
+
+  .mobile-marquee {
+    display: none;
+  }
+
+  .how-to-book-upper-box {
+    margin: -125px 0 90px 0;
+  }
+
+  .how-to-book-title {
+    font-size: var(--title-font-size-tablet);
+    margin-bottom: 24px;
+  }
+
+  .stepper-box {
+    padding: 12px 12px;
+  }
+
+  .step {
+    font-size: 14px;
+    padding: 8px 8px;
+  }
+
+  .step-separator {
+    font-size: 24px;
+  }
+
+  .how-to-book-image {
+    width: 318px;
+    margin-right: 16px;
+  }
+
+  .bottom-margin {
+    margin-bottom: 16px;
+  }
+
+  .how-to-book-text {
+    font-size: var(--subtitle-font-size-tablet);
+    margin-bottom: 24px;
+  }
+}
+
+
+/* Mobile: ≤ 640px */
+@media (max-width: 640px) {
+  .how-to-book-upper-box {
+    margin: 45px 0 40px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .how-to-book-title {
+    font-size: var(--title-font-size-mobile);
+    margin-bottom: 20px;
+  }
+
+  .stepper-box {
+    width: 100%;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+  }
+
+  .step {
+    width: 100%;
+    text-align: center;
+    font-size: 19px;
+    padding: 10px 16px;
+    margin-bottom: 8px;
+  }
+
+  .step.active {
+    background-color: rgba(37, 49, 67, 0.604);;
+    color: white;
+    transform: scale(1.1);
+  }
+
+  .step-separator {
+    display: none;
+  }
+
+  .how-to-book-lower-box {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .how-to-book-image {
+    min-width: 300px;
+    max-width: 330px;
+    margin-right: 0;
+    margin-bottom: 16px;
+  }
+
+  .how-to-book-text {
+    font-size: var(--subtitle-font-size-mobile);
+  }
+}

@@ -1,0 +1,18 @@
+:root {
+  --font-primary: 'Montserrat', sans-serif;
+  --font-secondary: 'Inter', sans-serif;
+
+  --title-font-size: 68px;
+  --title-font-size-tablet: 40px;
+  --title-font-size-mobile: 28px;
+
+  --subtitle-font-size: 18px;
+  --subtitle-font-size-tablet: 16px;
+  --subtitle-font-size-mobile: 14px;
+
+  --title-color: rgb(252, 253, 255);
+  --subtitle-color: rgb(233, 236, 241);
+
+  --title-font-weight: 700;
+  --subtitle-font-weight: 400;
+}

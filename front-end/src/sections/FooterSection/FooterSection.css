@@ -1,0 +1,145 @@
+@import '../../styles/variables.css';
+
+.footer-section {
+  margin-top: 150px;
+}
+
+.footer-cta {
+  text-align: center;
+  margin-bottom: 164px;
+}
+
+.footer-cta-title {
+  font-family: var(--font-privary);
+  font-size: 40px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #FFFFFF;
+}
+
+.footer-bottom {
+  background: rgb(3, 8, 18);
+  font-family: var(--font-secondary);
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid rgb(37, 49, 67);
+  gap: 24px;
+  padding: 24px 32px;
+}
+
+.footer-map-container {
+  flex: 1 1 60%;
+  max-width: 667px;
+}
+
+.footer-info-container {
+  flex: 1 1;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+}
+
+.footer-contact {
+  display: flex;
+  justify-content: space-between;
+}
+
+.footer-contact-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.footer-icon {
+  color: #fefefe;
+  margin-right: 12px;
+}
+
+.footer-contact-link {
+  color: #bababc;
+  font-size: 18px;
+  transition: color 0.15s;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 13px;
+}
+
+.footer-social-link {
+  font-size: 24px;
+  color: #fefefe;
+  transition: scale 0.3s;
+}
+
+.footer-social-link:hover {
+  scale: 1.05;
+}
+
+.footer-hours {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  line-height: 150%;
+}
+
+.footer-copy {
+  margin-top: auto;
+}
+
+/* Tablet: ≤ 1024px , > 640px */
+@media (max-width: 1024px) and (min-width: 641px) {
+  .footer-bottom {
+    flex-direction: column;
+  }
+
+  .footer-map-container {
+    max-width: 100%;
+  }
+}
+
+/* Mobile: ≤ 640px */
+@media (max-width: 640px) {
+  .footer-section {
+    margin-top: 48px;
+  }
+
+  .footer-cta {
+    margin-bottom: 56px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    padding: 24px 20px;
+    gap: 28px;
+  }
+  
+  .footer-info-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .footer-contact {
+    align-items: center;
+  }
+
+  .footer-contact-item {
+    margin-bottom: 12px;
+  }
+
+  .footer-socials {
+    gap: 24px;
+  }
+
+  .footer-hours {
+    margin-top: 10px;
+    flex-direction: column-reverse;
+    gap: 24px;
+  }
+
+  .footer-hours,
+  .footer-contact-link{
+    font-size: 14px;
+  }
+
+}

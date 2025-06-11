@@ -1,0 +1,99 @@
+.contact-button {
+  display: inline-block;
+  background: #C90F12;
+  color: #E9ECF1;
+
+  width: 300px;
+
+  text-align: center;
+  font-family: Inter;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 150%;
+  
+  padding: 16px 32px;
+  margin-top: 56px;
+}
+
+.contact-button:hover {
+  background-color: #EE1417;
+}
+
+.contact-button:active {
+  background-color: #C00E11;
+}
+
+.contact-button:disabled {
+  background-color: #893133;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.modal-content {
+  /* background: #1c1e24; */
+  padding: 30px 40px;
+  border-radius: 12px;
+  position: relative;
+  max-width: 600px;
+  max-height: 100vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.5s ease-out;
+  scrollbar-width: none;
+}
+
+.modal-content::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes slideIn {
+  0% { transform: translateY(-20px); opacity: 0.2; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.close-modal-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 18px;
+  color: #D1D8E1;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.close-modal-button:hover {
+  color: #C90F12;
+}
+
+/* Tablet: ≤ 1024px , > 640px */
+@media (max-width: 1024px) and (min-width: 641px) {
+
+}
+
+/* Mobile: ≤ 640px */
+@media (max-width: 640px) {
+  .modal-content {
+    padding: 40px 0;
+  }
+}
+
+
