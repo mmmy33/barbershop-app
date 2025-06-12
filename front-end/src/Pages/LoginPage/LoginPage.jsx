@@ -1,83 +1,91 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../../api.js';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 
-export const LoginPage = () => {
-  const [email, setEmail] = useState('');
+export function LoginPage() {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleLogin = async (event) => {
-    event.preventDefault();
-
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError(null);
     try {
-      const response = await api.post('/auth/login', { email, password });
-      const { access_token, refresh_token } = response.data;
-      if (access_token) {
-        localStorage.setItem('jwt', access_token);
-        if (refresh_token) {
-          localStorage.setItem('refreshToken', refresh_token);
-        }
-        navigate('/main');
+      const formData = new URLSearchParams();
+      formData.append('username', username);
+      formData.append('password', password);
+
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || 'Login failed');
       }
-    } catch (error) {
-      setErrorMessage('Ошибка входа. Проверьте введенные данные.');
+
+      const { access_token } = await res.json();
+      localStorage.setItem('jwt', access_token);
+      navigate('/main');
+    } catch (err) {
+      setError(err.message);
     }
-  };
+  }
 
   return (
-    <div className="container">
-      <h2 className="title is-2 has-text-centered">Вход</h2>
-      <div className="box">
-        <form onSubmit={handleLogin}>
+    <section className="section">
+      <div className="container">
+        <h1 className="title">Login</h1>
+        <form onSubmit={handleSubmit} className="box">
+          {error && <p className="notification is-danger">{error}</p>}
           <div className="field">
-            <label className="label">Почта</label>
-            <div className="control">
+            <label className="label">Username</label>
+            <div className="control has-icons-left">
               <input
-                type="email"
                 className="input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
                 required
-                placeholder="Введите вашу почту"
               />
+              <span className="icon is-small is-left">
+                <i className="fas fa-user" />
+              </span>
             </div>
           </div>
 
           <div className="field">
-            <label className="label">Пароль</label>
-            <div className="control">
+            <label className="label">Password</label>
+            <div className="control has-icons-left">
               <input
+                className="input"
                 type="password"
-                className="input"
+                placeholder="Password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 required
-                placeholder="Введите ваш пароль"
               />
+              <span className="icon is-small is-left">
+                <i className="fas fa-lock" />
+              </span>
             </div>
           </div>
 
-          {errorMessage && (
-            <div className="notification is-danger">{errorMessage}</div>
-          )}
-
           <div className="field">
             <div className="control">
-              <button type="submit" className="button is-primary is-fullwidth">
-                Войти
+              <button className="button is-primary" type="submit">
+                Login
               </button>
             </div>
           </div>
-
-          <div className="field">
-            <p className="has-text-centered">
-              Нет аккаунта? <a href="/register">Зарегистрироваться</a>
-            </p>
-          </div>
         </form>
+        <p>
+          Don't have an account? <Link to="/register">Register here</Link>
+        </p>
       </div>
-    </div>
+    </section>
   );
-};
+}

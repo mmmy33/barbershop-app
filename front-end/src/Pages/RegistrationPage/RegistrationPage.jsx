@@ -1,98 +1,105 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../../api.js';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 
-export const RegistrationPage = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+export function RegistrationPage() {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [phone_number, setPhone_number] = useState('');
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleRegister = async (event) => {
-    event.preventDefault();
-
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError(null);
     try {
-      const response = await api.post('/auth/register', { name, email, password });
-      const { access_token, refresh_token } = response.data;
-      if (access_token) {
-        localStorage.setItem('jwt', access_token);
-        if (refresh_token) {
-          localStorage.setItem('refreshToken', refresh_token);
-        }
-        navigate('/main');
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, phone_number }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || 'Registration failed');
       }
-    } catch (error) {
-      setErrorMessage('Ошибка регистрации. Попробуйте снова.');
+
+      const { access_token } = await res.json();
+      localStorage.setItem('jwt', access_token);
+      navigate('/main');
+    } catch (err) {
+      setError(err.message);
     }
-  };
+  }
 
   return (
-    <div className="container">
-      <h2 className="title is-2 has-text-centered">Регистрация</h2>
-      <div className="box">
-        <form onSubmit={handleRegister}>
+    <section className="section">
+      <div className="container">
+        <h1 className="title">Register</h1>
+        <form onSubmit={handleSubmit} className="box">
+          {error && <p className="notification is-danger">{error}</p>}
           <div className="field">
-            <label className="label">Имя</label>
-            <div className="control">
+            <label className="label">Username</label>
+            <div className="control has-icons-left">
               <input
+                className="input"
                 type="text"
-                className="input"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                placeholder="Choose a username"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
                 required
-                placeholder="Введите ваше имя"
               />
+              <span className="icon is-small is-left">
+                <i className="fas fa-user-plus" />
+              </span>
             </div>
           </div>
 
           <div className="field">
-            <label className="label">Почта</label>
-            <div className="control">
+            <label className="label">Phone Number</label>
+            <div className="control has-icons-left">
               <input
-                type="email"
                 className="input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="tel"
+                placeholder="+48 123 456 789"
+                value={phone_number}
+                onChange={e => setPhone_number(e.target.value)}
                 required
-                placeholder="Введите вашу почту"
               />
+              <span className="icon is-small is-left">
+                <i className="fas fa-phone" />
+              </span>
             </div>
           </div>
 
           <div className="field">
-            <label className="label">Пароль</label>
-            <div className="control">
+            <label className="label">Password</label>
+            <div className="control has-icons-left">
               <input
+                className="input"
                 type="password"
-                className="input"
+                placeholder="Choose a password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 required
-                placeholder="Введите ваш пароль"
               />
+              <span className="icon is-small is-left">
+                <i className="fas fa-lock" />
+              </span>
             </div>
           </div>
 
-          {errorMessage && (
-            <div className="notification is-danger">{errorMessage}</div>
-          )}
-
           <div className="field">
             <div className="control">
-              <button type="submit" className="button is-primary is-fullwidth">
-                Зарегистрироваться
+              <button className="button is-primary" type="submit">
+                Register
               </button>
             </div>
           </div>
-
-          <div className="field">
-            <p className="has-text-centered">
-              Уже есть аккаунт? <a href="/">Войти</a>
-            </p>
-          </div>
         </form>
+        <p>
+          Already have an account? <Link to="/">Login here</Link>
+        </p>
       </div>
-    </div>
+    </section>
   );
-};
+}
