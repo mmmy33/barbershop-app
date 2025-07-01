@@ -81,8 +81,8 @@ export const FooterSection = () => {
             </div>
 
             <div>
-              <div>Pon–Sob: 9:00–20:00</div>
-              <div>Niedziela: 9:00–18:00</div>
+              <div>Pon–Sob: 9:00 – 20:00</div>
+              <div>Niedziela: 9:00 – 18:00</div>
             </div>
           </div>
         </div>

@@ -71,10 +71,10 @@ export const ReviewsSection = () => {
       <Swiper
         modules={[Pagination]}
         spaceBetween={24}
-        slidesPerView={4}
         pagination={{ clickable: true }}
         loop={true}
         breakpoints={{
+          1440: { slidesPerView: 4 },
           1024: { slidesPerView: 3 },
           640: { slidesPerView: 2 },
           320: { slidesPerView: 1 }

@@ -1,4 +1,3 @@
-import React from 'react';
 import './HeroSection.css';
 import { ContactButton } from '../../components/ContactButton/ContactButton';
 import HeroImage from '../../Images/HeroImage.png';

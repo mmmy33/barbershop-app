@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './HeaderNavigation.css';
 
 import HeaderLogo from '../../Logos/HeaderLogo.svg';
@@ -7,10 +8,35 @@ import BurgerMobile from '../../Icons/IconBurgerSmall.svg';
 import IconClose from '../../Icons/IconCloseBig.svg';
 
 export const HeaderNavigation = () => {
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const openMenu = () => setIsMenuOpen(true);
   const closeMenu = () => setIsMenuOpen(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('jwt');
+    if (token) {
+      setIsLoggedIn(true);
+
+      fetch('http://127.0.0.1:8000/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.role === 'admin') {
+            setIsAdmin(true);
+          }
+        })
+        .catch(error => console.error('Error fetching user data:', error));
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, []);
 
   const handleScrollToSection = (href) => {
     const element = document.querySelector(href);
@@ -18,8 +44,9 @@ export const HeaderNavigation = () => {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
-  
+
   const navItems = [
+    ...(isAdmin ? [{ id: 'admin', label: 'Admin', route: '/admin' }] : []),
     { id: 'o-nas', label: 'O nas', href: '#o-nas' },
     { id: 'nasze-prace', label: 'Nasze prace', href: '#nasze-prace' },
     { id: 'jak-umowic', label: 'Jak umówić się?', href: '#kontakt' },
@@ -27,6 +54,7 @@ export const HeaderNavigation = () => {
     { id: 'zespol', label: 'Zespół', href: '#zespol' },
     { id: 'opinie', label: 'Opinie', href: '#opinie' },
     { id: 'kontakty', label: 'Kontakty', href: '#kontakty' },
+    { id: 'profile', label: isLoggedIn ? 'Profile' : 'Log in', route: isLoggedIn ? '/profile' : '/login' },
   ];
 
  return (
@@ -46,7 +74,13 @@ export const HeaderNavigation = () => {
             <button
               key={item.id}
               className="nav-button"
-              onClick={() => handleScrollToSection(item.href)}
+              onClick={() => {
+                if (item.route) {
+                  navigate(item.route);
+                } else {
+                  handleScrollToSection(item.href);
+                }
+              }}
             >
               {item.label}
             </button>
@@ -57,9 +91,9 @@ export const HeaderNavigation = () => {
         <div className="burger-container" onClick={openMenu}>
           <button className="burger-button" aria-label="Open menu">
             <picture>
-              {/* If ≤640px, show the small burger */}
+              {/* If phone, show the small burger */}
               <source srcSet={BurgerMobile} media="(max-width: 640px)" />
-              {/* If ≤1024px, show the large burger */}
+              {/* If tablet, show the large burger */}
               <source srcSet={BurgerTablet} media="(max-width: 1024px)" />
               {/* Fallback for desktop */}
               <img className="burger-button-icon" src={BurgerTablet} alt="Menu" />
@@ -97,8 +131,12 @@ export const HeaderNavigation = () => {
                   key={item.id}
                   className="burger-menu-nav-button"
                   onClick={() => {
-                    handleScrollToSection(item.href);
-                    closeMenu();
+                    if (item.route) {
+                      navigate(item.route);
+                    } else {
+                      handleScrollToSection(item.href);
+                      closeMenu();
+                    }
                   }}
                 >
                   {item.label}

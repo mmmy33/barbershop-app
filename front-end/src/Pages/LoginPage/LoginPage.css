@@ -1,0 +1,26 @@
+@import '../../styles/variables.css';
+
+.section-login {
+  max-width: 600px;
+  margin: 50px auto;
+  font-family: var(--font-primary);
+}
+
+.title {
+  color: var(--title-color);
+}
+
+.login-button {
+  font-weight: 600;
+}
+
+.login-subtitle {
+  font-weight: var(--subtitle-font-weight);
+}
+
+@media (max-width: 1024px) and (min-width: 641px) {}
+@media (max-width: 640px) {
+  .section-login {
+    margin: 50px 24px;
+  }
+}

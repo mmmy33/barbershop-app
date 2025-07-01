@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import './LoginPage.css'
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
+const API_BASE = '/api';
+
 export function LoginPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -10,15 +13,14 @@ export function LoginPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
-    try {
-      const formData = new URLSearchParams();
-      formData.append('username', username);
-      formData.append('password', password);
 
-      const res = await fetch('/api/auth/login', {
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
       });
 
       if (!res.ok) {
@@ -27,32 +29,34 @@ export function LoginPage() {
       }
 
       const { access_token } = await res.json();
+
       localStorage.setItem('jwt', access_token);
-      navigate('/main');
+      navigate('/profile');
+
     } catch (err) {
       setError(err.message);
     }
   }
 
   return (
-    <section className="section">
-      <div className="container">
+    <section className="section-login">
+      <div>
         <h1 className="title">Login</h1>
         <form onSubmit={handleSubmit} className="box">
           {error && <p className="notification is-danger">{error}</p>}
           <div className="field">
-            <label className="label">Username</label>
+            <label className="label">Email</label>
             <div className="control has-icons-left">
               <input
                 className="input"
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 required
               />
               <span className="icon is-small is-left">
-                <i className="fas fa-user" />
+                <i className="fas fa-envelope" />
               </span>
             </div>
           </div>
@@ -76,13 +80,13 @@ export function LoginPage() {
 
           <div className="field">
             <div className="control">
-              <button className="button is-primary" type="submit">
+              <button className="button is-primary login-button" type="submit">
                 Login
               </button>
             </div>
           </div>
         </form>
-        <p>
+        <p className='login-subtitle'>
           Don't have an account? <Link to="/register">Register here</Link>
         </p>
       </div>

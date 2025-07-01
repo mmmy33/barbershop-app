@@ -1,0 +1,585 @@
+import './AdminPage.css';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { pl } from 'date-fns/locale';
+
+const API_BASE = 'http://127.0.0.1:8000/api';
+const getAuthHeaders = () => ({
+  Accept: 'application/json',
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+});
+
+export default function AdminPage() {
+  const navigate = useNavigate();
+
+  // #region useState
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  const [barbers, setBarbers] = useState([]);
+
+  const [services, setServices] = useState([]);
+  const [serviceName, setServiceName] = useState('');
+  const [serviceDuration, setServiceDuration] = useState('');
+  const [servicePrice, setServicePrice] = useState('');
+  const [addServiceMessage, setAddServiceMessage] = useState('');
+
+  const [addons, setAddons] = useState([]);
+  const [addonName, setAddonName] = useState('');
+  const [addonDuration, setAddonDuration] = useState('');
+  const [addonPrice, setAddonPrice] = useState('');
+  const [addAddonMessage, setAddAddonMessage] = useState('');
+
+  // Weekly schedule form state
+  const [schedules, setSchedules] = useState([]);
+  const [selectedBarberId, setSelectedBarberId] = useState(0);
+  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState(0);
+  const [startTime, setStartTime] = useState('09:00');
+  const [endTime, setEndTime] = useState('20:00');
+
+  const [error, setError] = useState('');
+  // #endregion useState
+
+  const daysOfWeek = [
+    { label: 'Sunday', value: 0 },
+    { label: 'Monday', value: 1 },
+    { label: 'Tuesday', value: 2 },
+    { label: 'Wednesday', value: 3 },
+    { label: 'Thursday', value: 4 },
+    { label: 'Friday', value: 5 },
+    { label: 'Saturday', value: 6 },
+  ];
+
+  // User fetch to check if admin
+  useEffect(() => {
+    fetch(`${API_BASE}/auth/me/`, { headers: getAuthHeaders() })
+      .then(res => res.json())
+      .then(data => {
+        setIsAdmin(data.role === 'admin');
+        setLoadingUser(false);
+      })
+      .catch(() => setLoadingUser(false));
+  }, []);
+
+  // Barbers fetch
+  useEffect(() => {
+    if (!loadingUser) {
+      fetch(`${API_BASE}/barbers/`, { headers: getAuthHeaders() })
+        .then(res => res.json())
+        .then(data => setBarbers(Array.isArray(data) ? data : data.barbers || []))
+        .catch((err) => {
+          console.error('Error loading barbers', err);
+          setError('Failed to load barbers');
+        });
+    }
+  }, [loadingUser]);
+
+  //#region Weekly Schedule
+    const loadSchedules = (barberId) => {
+      fetch(`${API_BASE}/barbers/${barberId}/schedules/`, { headers: getAuthHeaders() })
+        .then((res) => res.json())
+        .then((data) => setSchedules(data))
+        .catch((err) => console.error('Error loading schedules', err));
+    };
+
+    // Add schedule
+    const addSchedule = () => {
+      if (selectedBarberId === 0 || selectedDayOfWeek === -1) { // Проверка на правильный день и барбера
+        setError('Please select barber and day');
+        return;
+      }
+
+      const newSchedule = {
+        day_of_week: selectedDayOfWeek,
+        start_time: startTime,
+        end_time: endTime
+      };
+
+      fetch(`${API_BASE}/barbers/${selectedBarberId}/schedules/`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(newSchedule),
+      })
+        .then((res) => res.json())
+        .then(() => {
+          loadSchedules(selectedBarberId);
+        })
+        .catch(() => console.log('Failed to add schedule'));
+    };
+
+    const deleteSchedule = (scheduleId) => {
+      console.log(`Deleting schedule with ID: ${scheduleId}`); // Для дебага
+
+      fetch(`${API_BASE}/barbers/${selectedBarberId}/schedules/${scheduleId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      })
+        .then((res) => {
+          console.log(`Response status: ${res.status}`); // Для дебага
+          if (res.ok) {
+            // Удаляем расписание из состояния только если ответ успешный
+            setSchedules((prevSchedules) =>
+              prevSchedules.filter((schedule) => schedule.id !== scheduleId)
+            );
+          } else {
+            // Логируем ошибку, если статус ответа не успешный
+            console.error('Error deleting schedule', res);
+            throw new Error('Failed to delete schedule');
+          }
+        })
+        .catch((err) => {
+          console.error('Error:', err.message); // Логируем ошибку
+          setError('Failed to delete schedule'); // Устанавливаем ошибку в состоянии
+        });
+    };
+
+
+  //#endregion Weekly Schedule
+
+  //#region Services
+    // Services fetch
+      useEffect(() => {
+        fetch(`${API_BASE}/services/`, { headers: getAuthHeaders() })
+          .then((res) => res.json())
+          .then((data) => setServices(data))
+          .catch((err) => console.error('Error loading services', err));
+      }, []);
+
+    // Function to add a new service
+    const addService = async (serviceData) => {
+      try {
+        const res = await fetch(`${API_BASE}/services/`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(serviceData),
+        });
+        if (!res.ok) throw new Error('Failed to add service');
+        const createdService = await res.json();
+        setServices((prevServices) => [...prevServices, createdService]);
+        setError('');
+        setAddServiceMessage('Created successfully');
+        setTimeout(() => setAddServiceMessage(''), 2500);
+      } catch (error) {
+        setError(`Failed to add service: ${error.message}`);
+      }
+    };
+
+    // Handle 'Add Service' form submission
+    const handleService = (e) => {
+      e.preventDefault();
+      const newService = {
+        name: serviceName,
+        duration: parseInt(serviceDuration),
+        price: parseFloat(servicePrice),
+      };
+      addService(newService);
+    };
+
+    // Function to delete a service by ID
+    const deleteService = async (serviceId) => {
+      try {
+        const res = await fetch(`${API_BASE}/services/${serviceId}/`, {
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+        });
+        if (!res.ok) throw new Error('Failed to delete service');
+        setServices((prevServices) => prevServices.filter((service) => service.id !== serviceId));
+        setError('');
+        setAddServiceMessage('Service deleted successfully');
+        setTimeout(() => setAddServiceMessage(''), 2500);
+      } catch (error) {
+        setError(`Failed to delete service: ${error.message}`);
+      }
+    };
+  //#endregion Services
+
+  //#region Addons
+    // Addons fetch
+    useEffect(() => {
+      fetch(`${API_BASE}/addons/`, { headers: getAuthHeaders() })
+        .then(res => res.json())
+        .then(data => {
+          console.log(data);
+          setAddons(data);
+        })
+        .catch(error => console.error('Error fetching addons:', error));
+    }, []);
+
+    // Function to add a new addon
+    const addAddon = async (addonData) => {
+      try {
+        const res = await fetch(`${API_BASE}/addons/`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(addonData),
+        });
+        if (!res.ok) throw new Error('Failed to add addon');
+        const createdAddon = await res.json();
+        setAddons((prevAddons) => [...prevAddons, createdAddon]);
+        setError('');
+        setAddAddonMessage('Addon created successfully');
+        setTimeout(() => setAddAddonMessage(''), 2500);
+      } catch (error) {
+        setError(`Failed to add addon: ${error.message}`);
+      }
+    };
+
+    // Function to delete an addon by ID
+    const deleteAddon = async (addonId) => {
+      try {
+        const res = await fetch(`${API_BASE}/addons/${addonId}/`, {
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+        });
+        if (!res.ok) throw new Error('Failed to delete addon');
+        // Remove the deleted addon from the state
+        setAddons((prevAddons) => prevAddons.filter((addon) => addon.id !== addonId));
+        setError('');
+        setAddAddonMessage ('Addon deleted successfully');
+        setTimeout(() => setAddAddonMessage(''), 2500);
+      } catch (error) {
+        setError(`Failed to delete addon: ${error.message}`);
+      }
+    };
+
+    // Handle 'Add Addon' form submission
+    const handleAddonSubmit = (e) => {
+      e.preventDefault();
+      const newAddon = {
+        name: addonName,
+        duration: parseInt(addonDuration),
+        price: parseFloat(addonPrice),
+      };
+      addAddon(newAddon);
+    };
+  //#endregion Addons
+
+  if (loadingUser) return <div className="container"><p>Loading...</p></div>;
+  if (!isAdmin)    return <div className="container"><p>Unauthorized</p></div>;
+
+  return (
+    <div className="container">
+      <section className="section">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h1 className="title">ADMIN PANEL</h1>
+          <button className="button is-link" onClick={() => navigate('/')}>Home</button>
+        </div>
+
+        {error && <div className="notification is-danger">{error}</div>}
+
+        {/* Barber Selection and Schedule Form */}
+        <div className="box">
+          <h2 className="subtitle">Manage Barber Schedules</h2>
+          <div className="field">
+            <div className="field is-grouped is-flex-wrap-wrap">
+              <div className="control">
+                <div className="select">
+                  <select
+                    value={selectedBarberId}
+                    onChange={(e) => {
+                      const barberId = +e.target.value;
+                      setSelectedBarberId(barberId);
+                      loadSchedules(barberId);
+                    }}
+                  >
+                    <option value={0}>Select Barber</option>
+                    {barbers.map((barber) => (
+                      <option key={barber.id} value={barber.id}>
+                        {barber.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="control">
+                <div className="select">
+                  <select value={selectedDayOfWeek} onChange={(e) => setSelectedDayOfWeek(+e.target.value)}>
+                    <option value={-1}>Select Day</option>
+                    {[...Array(6).keys()].map((day) => (
+                      <option key={day} value={day}>
+                        {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][day]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="control">
+                <input
+                  className="input"
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                />
+              </div>
+
+              <div className="control">
+                <input
+                  className="input"
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                />
+              </div>
+
+              <div className="control">
+                <button className="button is-primary" onClick={addSchedule}>
+                  Add Schedule
+                </button>
+              </div>
+            </div>
+
+            <table className="table is-fullwidth is-striped">
+              <thead>
+                <tr>
+                  <th>Barber</th>
+                  <th>Day</th>
+                  <th>From</th>
+                  <th>To</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {schedules.map((s) => {
+                  const barber = barbers.find((b) => b.id === s.barber_id);
+                  const day = daysOfWeek.find((d) => d.value === s.day_of_week)?.label;
+
+                  return (
+                    <tr key={s.id}>
+                      <td>{barber ? barber.name : 'Unknown Barber'}</td>
+                      <td>{day}</td>
+                      <td>{s.start_time}</td>
+                      <td>{s.end_time}</td>
+                      <td>
+                        <button className="button is-small is-danger" onClick={() => deleteSchedule(s.id)}>
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+
+
+
+        {/* Unavailable Times */}
+        {/* <div className="box">
+          <h2 className="subtitle">Add Unavailable Time</h2>
+          <div className="field is-grouped is-flex-wrap-wrap">
+            <div className="control"><div className="select">
+              <select value={unBarberId} onChange={e => setUnBarberId(+e.target.value)}>
+                <option value={0}>Select Barber</option>
+                {barbers.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select></div>
+            </div>
+            <div className="control"><DatePicker selected={unDate} onChange={setUnDate} dateFormat="yyyy-MM-dd" className="input" locale={pl} placeholderText="Select date" /></div>
+            <div className="control"><input className="input" type="time" value={unStart} onChange={e => setUnStart(e.target.value)} /></div>
+            <div className="control"><input className="input" type="time" value={unEnd} onChange={e => setUnEnd(e.target.value)} /></div>
+            <div className="control"><input className="input" type="text" placeholder="Reason" value={unReason} onChange={e => setUnReason(e.target.value)} /></div>
+            <div className="control"><button className="button is-primary" onClick={addUnavailableTimeForBarber}>Add Unavailable</button></div>
+          </div>
+          <table className="table is-fullwidth is-striped">
+            <thead><tr><th>Barber</th><th>Start</th><th>End</th><th>Reason</th><th>Action</th></tr></thead>
+            <tbody>{unavailables.map(u => {
+              const barber = barbers.find(b => b.id === u.barber_id);
+              return <tr key={u.id}>
+                <td>{barber?.name}</td>
+                <td>{new Date(u.start_datetime).toLocaleString()}</td>
+                <td>{new Date(u.end_datetime).toLocaleString()}</td>
+                <td>{u.reason}</td>
+                <td><button className="button is-small is-danger" onClick={() => deleteItem('unavailable', u.id)}>Delete</button></td>
+              </tr>;
+            })}</tbody>
+          </table>
+        </div> */}
+
+        {/* Add new service */}
+        <div className="box">
+          <h2 className="subtitle">Add New Service</h2>
+          {addServiceMessage && <div className="notification is-success">{addServiceMessage}</div>}
+          <form onSubmit={handleService}>
+            <div className="field">
+              <label className="label">Service Name</label>
+              <div className="control">
+                <input
+                  className="input"
+                  type="text"
+                  value={serviceName}
+                  onChange={(e) => setServiceName(e.target.value)}
+                  placeholder="Enter service name"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="label">Duration (minutes)</label>
+              <div className="control">
+                <input
+                  className="input"
+                  type="number"
+                  value={serviceDuration}
+                  onChange={(e) => setServiceDuration(e.target.value)}
+                  placeholder="Enter service duration"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="label">Price</label>
+              <div className="control">
+                <input
+                  className="input"
+                  type="number"
+                  value={servicePrice}
+                  onChange={(e) => setServicePrice(e.target.value)}
+                  placeholder="Enter service price"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="field is-grouped">
+              <div className="control">
+                <button className="button is-primary" onClick={handleService}>
+                  Add Service
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {/* List of existing services */}
+        <div className="box">
+          <h2 className="subtitle">Existing Services</h2>
+          <table className="table is-fullwidth is-striped">
+            <thead>
+              <tr>
+                <th>Service Name</th>
+                <th>Duration</th>
+                <th>Price</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {services.map((service) => (
+                <tr key={service.id}>
+                  <td>{service.name}</td>
+                  <td>{service.duration} min</td>
+                  <td>{service.price} zł</td>
+                  <td>
+                    <button
+                      className="button is-small is-danger"
+                      onClick={() => deleteService(service.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Add new addon */}
+        <div className="box">
+          <h2 className="subtitle">Add New Addon</h2>
+          {addAddonMessage && <div className="notification is-success">{addAddonMessage}</div>}
+          <form onSubmit={handleAddonSubmit}>
+            <div className="field">
+              <label className="label">Addon Name</label>
+              <div className="control">
+                <input
+                  className="input"
+                  type="text"
+                  value={addonName}
+                  onChange={(e) => setAddonName(e.target.value)}
+                  placeholder="Enter addon name"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="label">Duration (minutes)</label>
+              <div className="control">
+                <input
+                  className="input"
+                  type="number"
+                  value={addonDuration}
+                  onChange={(e) => setAddonDuration(e.target.value)}
+                  placeholder="Enter addon duration"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="label">Price</label>
+              <div className="control">
+                <input
+                  className="input"
+                  type="number"
+                  value={addonPrice}
+                  onChange={(e) => setAddonPrice(e.target.value)}
+                  placeholder="Enter addon price"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="field is-grouped">
+              <div className="control">
+                <button className="button is-primary" type="submit">
+                  Add Addon
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {/* List of existing addons */}
+        <div className="box">
+          <h2 className="subtitle">Existing Addons</h2>
+          <table className="table is-fullwidth is-striped">
+            <thead>
+              <tr>
+                <th>Addon Name</th>
+                <th>Duration</th>
+                <th>Price</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {addons.map((addon) => (
+                <tr key={addon.id}>
+                  <td>{addon.name}</td>
+                  <td>{addon.duration} min</td>
+                  <td>{addon.price} zł</td>
+                  <td>
+                    <button
+                      className="button is-small is-danger"
+                      onClick={() => deleteAddon(addon.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}

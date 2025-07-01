@@ -1,0 +1,22 @@
+@import '../../styles/variables.css';
+
+.section-registration {
+  max-width: 600px;
+  margin: 50px auto;
+  font-family: var(--font-primary);
+}
+
+.title {
+  color: var(--title-color);
+}
+
+.register-button {
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) and (min-width: 641px) {}
+@media (max-width: 640px) {
+  .section-registration {
+    margin: 50px 24px;
+  }
+}

@@ -1,7 +1,6 @@
-  import React, { useState, useEffect } from 'react';
+  import { useState, useEffect } from 'react';
   import './ContactButton.css';
-  // import { iconClose } from '../../Icons/IconClose.svg'
-  import { Form } from '../Form/Form';
+  import Form from '../Form/Form.jsx';
 
   // button in last section behaves different
 
@@ -10,14 +9,15 @@
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
-      if (isModalOpen) {
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = '';
-      }
+      document.body.style.overflow = isModalOpen ? 'hidden' : '';
     }, [isModalOpen]);
 
     const openModal = () => {
+      const jwt = localStorage.getItem('jwt');
+      if (!jwt || jwt==='undefined' || jwt==='null') {
+        window.location.href = '/login';
+        return;
+      }
       setIsModalOpen(true);
     };
 
