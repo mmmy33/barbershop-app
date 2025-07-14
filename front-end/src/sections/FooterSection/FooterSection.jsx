@@ -1,15 +1,9 @@
 import './FooterSection.css';
-import { ContactButton } from '../../components/ContactButton/ContactButton';
 
 export const FooterSection = () => {
   return (
     <footer className="footer-section">
-      <div className="footer-cta">
-        <h2 className="footer-cta-title">Masz dość złych fryzur?</h2>
-        <ContactButton />
-      </div>
-
-      <div className="footer-bottom" id='kontakty'>
+      <div className="footer-container" id='kontakty'>
         <div className="footer-map-container">
           <a
             href="https://goo.gl/maps/djvQtDkHuvndrRmt9"

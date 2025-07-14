@@ -1,4 +1,5 @@
 import './BarbersSection.css';
+import { ContactButton } from '../../components/ContactButton/ContactButton';
 
 import BarberImg1 from '../../Images/BarberDanil.png';
 import BarberImg2 from '../../Images/BarberArtur.png';
@@ -18,6 +19,11 @@ export const BarbersSection = () => {
             <img src={barber.img} alt={barber.name} className="barber-image" />
           </div>
         ))}
+      </div>
+
+      <div className="barbers-cta">
+        <h2 className="barbers-cta-title">Masz dość złych fryzur?</h2>
+        <ContactButton />
       </div>
     </section>
   );

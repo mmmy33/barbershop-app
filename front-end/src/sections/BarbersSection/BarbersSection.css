@@ -39,6 +39,19 @@
   transform: scale(1.05);
 }
 
+.barbers-cta {
+  text-align: center;
+  margin: 150px 0 164px 0;
+}
+
+.barbers-cta-title {
+  font-family: var(--font-privary);
+  font-size: 40px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #FFFFFF;
+}
+
 @media (max-width: 768px) {
   .barbers-grid {
     grid-template-columns: 1fr;
@@ -46,6 +59,10 @@
 
   .barber-card {
     max-width: 100%;
+  }
+
+  .barbers-cta {
+    margin: 60px 0 60px 0;
   }
 }
 
@@ -79,5 +96,9 @@
 
   .barbers-grid {
     gap: 10px;
+  }
+
+  .barbers-cta {
+    margin: 30px 0 30px 0;
   }
 }

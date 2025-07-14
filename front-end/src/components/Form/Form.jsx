@@ -1,17 +1,12 @@
   import { useState, useMemo, useEffect } from 'react';
+  import { API_BASE, getAuthHeaders } from '../../api/config';
   import classNames from 'classnames';
-  import './Form.css';
-
   import DatePicker from 'react-datepicker';
   import 'react-datepicker/dist/react-datepicker.css';
   import { pl } from 'date-fns/locale';
+  import ConfirmationModal from './ConfirmationModal';
+  import './Form.css';
 
-  const API_BASE = 'http://127.0.0.1:8000/api';
-  const getAuthHeaders = () => ({
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${localStorage.getItem('jwt')}`,
-  });
 
   const Form = ({ closeModal }) => {
     //#region useStates
@@ -39,6 +34,9 @@
 
     const [selectedTime, setSelectedTime] = useState('');
     const [hasTimeError, setHasTimeError] = useState(false);
+
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [confirmData, setConfirmData] = useState({datetime: ''});
     //#endregion useStates
 
     //#region Memoized services
@@ -248,7 +246,6 @@
 
     const handleSubmit = async (event) => {
       event.preventDefault();
-      const token = localStorage.getItem('jwt');
 
       const isValid =
         name &&
@@ -282,254 +279,289 @@
       }
 
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/appointments', {
+        const response = await fetch(`${API_BASE}/appointments`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${localStorage.getItem('jwt')}`
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            name,
+            phoneNumber,
+            barberId: userId,
+            serviceId: selectedServiceId,
+            addonIds: selectedAddons,
+            scheduled_time: `${formatLocalDate(selectedDate)}T${selectedTime}:00`
+          })
         });
-
         if (!response.ok) {
-          throw new Error('Error creating appointment: ' + response.statusText);
+          throw new Error(`Error ${response.status}`);
         }
 
+        // сначала получаем тело ответа
         const data = await response.json();
-        console.log('Success', data);
-        closeModal();
+
+        // создаём Date из того, что вернул backend
+        const dt = new Date(data.scheduled_time);
+        const datetime = dt.toLocaleString('pl-PL', {
+          day:   'numeric',
+          month: 'long',
+          hour:  '2-digit',
+          minute:'2-digit',
+          timeZone: 'UTC'
+        });
+
+        // формируем данные для модала
+
+        setConfirmData({ datetime });
+        setShowConfirm(true);
+        // НЕ закрываем форму здесь — ждём, пока пользователь нажмёт «Zrozumiano»
 
       } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred while creating the appointment. Please try again later.');
+        console.error(error);
+        alert('Error creating appointment');
       }
     };
 
+    const handleConfirmClose = () => {
+      setShowConfirm(false);
+      closeModal();  // теперь закрываем форму
+    };
+
     return (
-      <form
-        className="box custom-form"
-        onSubmit={handleSubmit}
-      >
-        <div className="field">
-          <label className="label" htmlFor="name">Name</label>
-          <div className={classNames('control', {
-            'has-icons-right': hasNameError,
-          })}>
-            <input
-              id='name'
-              className={classNames('input', {
-                'is-danger': hasNameError,
-              })}
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={handeNameChange}
-            />
-
-            {hasNameError && (
-              <span className="icon is-small is-right">
-                <i className="fas fa-exclamation-triangle has-text-danger"></i>
-              </span>
-            )}
-
-            {hasNameError && (
-              <p className="help is-danger">Name is required</p>
-            )}
-          </div>
-        </div>
-
-        <div className="field">
-          <label className="label" htmlFor="phone-number">Phone</label>
-          <div className={classNames('control', {
-            'has-icons-right': hasPhoneNumberError,
-          })}>
-            <input
-              id='phone-number'
-              className={classNames('input', {
-                'is-danger': hasPhoneNumberError,
-              })}
-              type="phone"
-              placeholder="+48"
-              value={phoneNumber}
-              onChange={handePhoneNumberChange}
-            />
-
-            {hasPhoneNumberError && (
-              <p className="help is-danger"> Please enter a valid Polish number ( +48XXXXXXXXX )</p>
-            )}
-          </div>
-        </div>
-
-        <div className="field">
-          <label className="label" htmlFor="barber-select">Barber</label>
-
-          <div className="control has-icons-left choose-barber">
-            <div className={classNames('select', {
-              'is-danger': hasBarberError,
+      <>
+        <form
+          className="box custom-form"
+          onSubmit={handleSubmit}
+        >
+          <div className="field">
+            <label className="label" htmlFor="name">Name</label>
+            <div className={classNames('control', {
+              'has-icons-right': hasNameError,
             })}>
-              <select
-                id="barber-select"
-                value={userId}
-                onChange={handleBarberChange}
-              >
-                <option value="0" disabled>Select a Barber</option>
-                {barbers.map(barber => (
-                  <option key={barber.id} value={barber.id}>
-                    {barber.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+              <input
+                id='name'
+                className={classNames('input', {
+                  'is-danger': hasNameError,
+                })}
+                type="text"
+                placeholder="Name"
+                value={name}
+                onChange={handeNameChange}
+              />
 
-            <span className="icon is-small is-left">
-              <i className="fas fa-user"></i>
-            </span>
-          </div>
-
-          {hasBarberError && (
-            <p className="help is-danger">Please select a Barber</p>
-          )}
-        </div>
-
-        {userId > 0 && (
-          <>
-            <div className="field">
-              <label className="label" htmlFor="service-select">Service</label>
-
-              <div className="control has-icons-left">
-                <div className={classNames('select', {
-                  'is-danger': hasServiceError,
-                })}>
-                  <select
-                    id="service-select"
-                    value={selectedServiceId}
-                    onChange={handleServiceChange}
-                  >
-                    <option value="0" disabled>Select a Service</option>
-
-                    {servicesForBarber.map(svc => (
-                      <option key={svc.id} value={svc.id}>
-                        {svc.name} • {svc.duration} min • {svc.price} zl
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <span className="icon is-small is-left">
-                  <i className="fas fa-cut"></i>
+              {hasNameError && (
+                <span className="icon is-small is-right">
+                  <i className="fas fa-exclamation-triangle has-text-danger"></i>
                 </span>
-              </div>
+              )}
 
-              {hasServiceError && (
-                <p className="help is-danger">Please select a service</p>
+              {hasNameError && (
+                <p className="help is-danger">Name is required</p>
               )}
             </div>
-
-            {addons.length > 0 && (
-              <div className="field">
-                <label className="label">Addons</label>
-                <div className="addons-container">
-                  {addons.map(addon => (
-                    <label className="addon-item" key={addon.id}>
-                      <input
-                        type="checkbox"
-                        checked={selectedAddons.includes(addon.id)}
-                        onChange={() => handleAddonToggle(addon.id)}
-                      />
-                      <div className="addon-info">
-                        <span className="addon-name">{addon.name}</span>
-                        <span className="addon-duration">{addon.duration} min</span>
-                        <span className="addon-price">{addon.price} zl</span>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {selectedServiceId > 0 && (
-          <div className="field">
-            <label className="label" htmlFor='date'>Wybierz datę</label>
-            <div className="control">
-              <DatePicker
-                selected={selectedDate}
-                onChange={handleDateChange}
-                onClick={(date) => setSelectedDate(date)}
-                dateFormat="dd MMMM yyyy"
-                placeholderText="Kliknij, aby wybrać"
-                minDate={new Date()}
-                className="input"
-                calendarStartDay={1}
-                locale={pl}
-                id='date'
-                popperPlacement="bottom-start"
-                popperModifiers={[
-                  {
-                    name: 'flip',
-                    options: {
-                      fallbackPlacements: [],  // запрещаем flip вверх
-                    },
-                  },
-                  {
-                    name: 'preventOverflow',
-                    options: {
-                      boundary: 'viewport'
-                    }
-                  }
-                ]}
-                showPopperArrow={false} 
-              />
-            </div>
-
-            {hasDateError && (
-              <p className="help is-danger">Please select a date</p>
-            )}
           </div>
-        )}
 
-        {selectedDate && (
           <div className="field">
-            <label className="label" htmlFor='time'>Wybierz czas</label>
-            <div className="control">
-              <div className="select is-fullwidth">
+            <label className="label" htmlFor="phone-number">Phone</label>
+            <div className={classNames('control', {
+              'has-icons-right': hasPhoneNumberError,
+            })}>
+              <input
+                id='phone-number'
+                className={classNames('input', {
+                  'is-danger': hasPhoneNumberError,
+                })}
+                type="phone"
+                placeholder="+48"
+                value={phoneNumber}
+                onChange={handePhoneNumberChange}
+              />
+
+              {hasPhoneNumberError && (
+                <p className="help is-danger"> Please enter a valid Polish number ( +48XXXXXXXXX )</p>
+              )}
+            </div>
+          </div>
+
+          <div className="field">
+            <label className="label" htmlFor="barber-select">Barber</label>
+
+            <div className="control has-icons-left choose-barber">
+              <div className={classNames('select', {
+                'is-danger': hasBarberError,
+              })}>
                 <select
-                  value={selectedTime}
-                  onChange={handleTimeChange}
-                  onClick={(e) => setSelectedTime(e.target.value)}
-                  id='time'
+                  id="barber-select"
+                  value={userId}
+                  onChange={handleBarberChange}
                 >
-                  <option value="">Godzina</option>
-                  {timeslots.map((slot) => (
-                    <option key={slot} value={slot}>{slot}</option>
+                  <option value="0" disabled>Select a Barber</option>
+                  {barbers.map(barber => (
+                    <option key={barber.id} value={barber.id}>
+                      {barber.name}
+                    </option>
                   ))}
                 </select>
               </div>
+
+              <span className="icon is-small is-left">
+                <i className="fas fa-user"></i>
+              </span>
             </div>
 
-            {hasTimeError && (
-              <p className="help is-danger">Please select time</p>
+            {hasBarberError && (
+              <p className="help is-danger">Please select a Barber</p>
             )}
           </div>
+
+          {userId > 0 && (
+            <>
+              <div className="field">
+                <label className="label" htmlFor="service-select">Service</label>
+
+                <div className="control has-icons-left">
+                  <div className={classNames('select', {
+                    'is-danger': hasServiceError,
+                  })}>
+                    <select
+                      id="service-select"
+                      value={selectedServiceId}
+                      onChange={handleServiceChange}
+                    >
+                      <option value="0" disabled>Select a Service</option>
+
+                      {servicesForBarber.map(svc => (
+                        <option key={svc.id} value={svc.id}>
+                          {svc.name} • {svc.duration} min • {svc.price} zl
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <span className="icon is-small is-left">
+                    <i className="fas fa-cut"></i>
+                  </span>
+                </div>
+
+                {hasServiceError && (
+                  <p className="help is-danger">Please select a service</p>
+                )}
+              </div>
+
+              {addons.length > 0 && (
+                <div className="field">
+                  <label className="label">Addons</label>
+                  <div className="addons-container">
+                    {addons.map(addon => (
+                      <label className="addon-item" key={addon.id}>
+                        <input
+                          type="checkbox"
+                          checked={selectedAddons.includes(addon.id)}
+                          onChange={() => handleAddonToggle(addon.id)}
+                        />
+                        <div className="addon-info">
+                          <span className="addon-name">{addon.name}</span>
+                          <span className="addon-duration">{addon.duration} min</span>
+                          <span className="addon-price">{addon.price} zl</span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {selectedServiceId > 0 && (
+            <div className="field">
+              <label className="label" htmlFor='date'>Wybierz datę</label>
+              <div className="control">
+                <DatePicker
+                  selected={selectedDate}
+                  onChange={handleDateChange}
+                  onClick={(date) => setSelectedDate(date)}
+                  dateFormat="dd MMMM yyyy"
+                  placeholderText="Kliknij, aby wybrać"
+                  minDate={new Date()}
+                  className="input"
+                  calendarStartDay={1}
+                  locale={pl}
+                  id='date'
+                  popperPlacement="bottom-start"
+                  popperModifiers={[
+                    {
+                      name: 'flip',
+                      options: {
+                        fallbackPlacements: [],  // запрещаем flip вверх
+                      },
+                    },
+                    {
+                      name: 'preventOverflow',
+                      options: {
+                        boundary: 'viewport'
+                      }
+                    }
+                  ]}
+                  showPopperArrow={false} 
+                />
+              </div>
+
+              {hasDateError && (
+                <p className="help is-danger">Please select a date</p>
+              )}
+            </div>
+          )}
+
+          {selectedDate && (
+            <div className="field">
+              <label className="label" htmlFor='time'>Wybierz czas</label>
+              <div className="control">
+                <div className="select is-fullwidth">
+                  <select
+                    value={selectedTime}
+                    onChange={handleTimeChange}
+                    onClick={(e) => setSelectedTime(e.target.value)}
+                    id='time'
+                  >
+                    <option value="">Godzina</option>
+                    {timeslots.map((slot) => (
+                      <option key={slot} value={slot}>{slot}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {hasTimeError && (
+                <p className="help is-danger">Please select time</p>
+              )}
+            </div>
+          )}
+
+          <div className="box mt-4">
+            <p><strong>Total Duration:</strong> {totalDuration} min</p>
+            <p><strong>Total Price:</strong> {totalPrice} zł</p>
+          </div>
+
+          <div className="buttons">
+            <button type="button" className="button is-danger" onClick={closeModal}>
+              Close
+            </button>
+
+            <button type="submit" className="button is-link">
+              Submit
+            </button>
+          </div>
+        </form>
+        {showConfirm && (
+          <ConfirmationModal
+            onClose={handleConfirmClose}
+            barberName={confirmData.barberName}
+            datetime={confirmData.datetime}
+            serviceName={confirmData.serviceName}
+          />
         )}
-
-        <div className="box mt-4">
-          <p><strong>Total Duration:</strong> {totalDuration} min</p>
-          <p><strong>Total Price:</strong> {totalPrice} zł</p>
-        </div>
-
-        <div className="buttons">
-          <button type="button" className="button is-danger" onClick={closeModal}>
-            Close
-          </button>
-
-          <button type="submit" className="button is-link">
-            Submit
-          </button>
-        </div>
-      </form>
+      </>
     )
   }
 

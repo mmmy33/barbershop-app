@@ -1,16 +1,11 @@
 import './AdminPage.css';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { pl } from 'date-fns/locale';
-
-const API_BASE = 'http://127.0.0.1:8000/api';
-const getAuthHeaders = () => ({
-  Accept: 'application/json',
-  'Content-Type': 'application/json',
-  Authorization: `Bearer ${localStorage.getItem('jwt')}`,
-});
+// import DatePicker from 'react-datepicker';
+// import { pl } from 'date-fns/locale';
+import { API_BASE, getAuthHeaders } from '../../api/config';
+import { fetchCurrentUser } from '../../api/auth';
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -44,24 +39,21 @@ export default function AdminPage() {
   // #endregion useState
 
   const daysOfWeek = [
-    { label: 'Sunday', value: 0 },
-    { label: 'Monday', value: 1 },
-    { label: 'Tuesday', value: 2 },
-    { label: 'Wednesday', value: 3 },
-    { label: 'Thursday', value: 4 },
-    { label: 'Friday', value: 5 },
-    { label: 'Saturday', value: 6 },
+    { label: 'Monday', value: 0 },
+    { label: 'Tuesday', value: 1 },
+    { label: 'Wednesday', value: 2 },
+    { label: 'Thursday', value: 3 },
+    { label: 'Friday', value: 4 },
+    { label: 'Saturday', value: 5 },
+    { label: 'Sunday', value: 6 },
   ];
 
   // User fetch to check if admin
   useEffect(() => {
-    fetch(`${API_BASE}/auth/me/`, { headers: getAuthHeaders() })
-      .then(res => res.json())
-      .then(data => {
-        setIsAdmin(data.role === 'admin');
-        setLoadingUser(false);
-      })
-      .catch(() => setLoadingUser(false));
+    fetchCurrentUser()
+      .then(data => setIsAdmin(data.role === 'admin'))
+      .catch(() => {})
+      .finally(() => setLoadingUser(false));
   }, []);
 
   // Barbers fetch
@@ -87,7 +79,7 @@ export default function AdminPage() {
 
     // Add schedule
     const addSchedule = () => {
-      if (selectedBarberId === 0 || selectedDayOfWeek === -1) { // Проверка на правильный день и барбера
+      if (selectedBarberId === 0 || selectedDayOfWeek === 0) { // Проверка на правильный день и барбера
         setError('Please select barber and day');
         return;
       }
@@ -110,43 +102,38 @@ export default function AdminPage() {
         .catch(() => console.log('Failed to add schedule'));
     };
 
-    const deleteSchedule = (scheduleId) => {
-      console.log(`Deleting schedule with ID: ${scheduleId}`); // Для дебага
-
-      fetch(`${API_BASE}/barbers/${selectedBarberId}/schedules/${scheduleId}`, {
+    // Delete schedule
+  const deleteSchedule = async (scheduleId, barberId) => {
+    try {
+      const response = await fetch(`${API_BASE}/barbers/schedules/${scheduleId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
-      })
-        .then((res) => {
-          console.log(`Response status: ${res.status}`); // Для дебага
-          if (res.ok) {
-            // Удаляем расписание из состояния только если ответ успешный
-            setSchedules((prevSchedules) =>
-              prevSchedules.filter((schedule) => schedule.id !== scheduleId)
-            );
-          } else {
-            // Логируем ошибку, если статус ответа не успешный
-            console.error('Error deleting schedule', res);
-            throw new Error('Failed to delete schedule');
-          }
-        })
-        .catch((err) => {
-          console.error('Error:', err.message); // Логируем ошибку
-          setError('Failed to delete schedule'); // Устанавливаем ошибку в состоянии
-        });
-    };
-
-
+      });
+      if (!response.ok) {
+        // Read the error text for debugging
+        const errorText = await response.text();
+        throw new Error(`Status ${response.status}: ${errorText}`);
+      }
+      // On success, reload schedules and show message
+      await loadSchedules(barberId);
+      setError('Schedule deleted successfully');
+      setTimeout(() => setError(''), 2500);
+      setError('');
+    } catch (err) {
+      console.error('Error deleting schedule', err);
+      setError('Failed to delete schedule');
+    }
+  };
   //#endregion Weekly Schedule
 
   //#region Services
     // Services fetch
-      useEffect(() => {
-        fetch(`${API_BASE}/services/`, { headers: getAuthHeaders() })
-          .then((res) => res.json())
-          .then((data) => setServices(data))
-          .catch((err) => console.error('Error loading services', err));
-      }, []);
+    useEffect(() => {
+      fetch(`${API_BASE}/services/`, { headers: getAuthHeaders() })
+        .then((res) => res.json())
+        .then((data) => setServices(data))
+        .catch((err) => console.error('Error loading services', err));
+    }, []);
 
     // Function to add a new service
     const addService = async (serviceData) => {
@@ -257,8 +244,10 @@ export default function AdminPage() {
     };
   //#endregion Addons
 
+
   if (loadingUser) return <div className="container"><p>Loading...</p></div>;
   if (!isAdmin)    return <div className="container"><p>Unauthorized</p></div>;
+
 
   return (
     <div className="container">
@@ -301,7 +290,7 @@ export default function AdminPage() {
                     <option value={-1}>Select Day</option>
                     {[...Array(7).keys()].map((day) => (
                       <option key={day} value={day}>
-                        {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][day]}
+                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][day]}
                       </option>
                     ))}
                   </select>
@@ -355,7 +344,7 @@ export default function AdminPage() {
                       <td>{s.start_time}</td>
                       <td>{s.end_time}</td>
                       <td>
-                        <button className="button is-small is-danger" onClick={() => deleteSchedule(s.id)}>
+                        <button className="button is-small is-danger" onClick={() => deleteSchedule(s.id, selectedBarberId)}>
                           Delete
                         </button>
                       </td>

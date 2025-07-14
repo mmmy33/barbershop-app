@@ -159,6 +159,7 @@
 
   .how-to-book-lower-box {
     flex-direction: column;
+    gap: 40px;
     align-items: center;
   }
 

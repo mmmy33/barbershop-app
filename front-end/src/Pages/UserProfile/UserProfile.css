@@ -1,0 +1,115 @@
+@import '../../styles/variables.css';
+
+.user-profile-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.user-profile-box {
+  font-family: var(--font-secondary);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 40px;
+  gap: 32px;
+}
+
+.visit-card {
+  max-width: 700px;
+  background: #09131EB8;
+  border: 1px solid #26303E;
+  border-radius: 8px;
+  padding: 24px;
+  /* text-align: center; */
+}
+
+.visit-card .visit-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.visit-card.scheduled .visit-header i {
+  color: #ffd700;
+}
+.visit-card.completed .visit-header i {
+  color: #4caf50;
+}
+
+.visit-card .visit-body {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  row-gap: 8px;
+  column-gap: 16px;
+  margin-bottom: 24px;
+}
+
+.visit-card .visit-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.visit-card .label {
+  font-size: 18px;
+  font-weight: 400;
+  color: #a1a5aa;
+  margin-bottom: 6px;
+}
+
+.visit-card .value {
+  font-size: 16px;
+  font-weight: 400;
+  color: #f5f5f5;
+}
+
+.visit-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.cancel-button {
+  color: #f5f5f5;
+  border: 1px solid #f5f5f5;
+  border-radius: 4px;
+  padding: 8px 32px;
+  transition: all 0.3s ease;
+}
+
+.cancel-button:hover {
+  border: 1px solid #e00e0e;
+  color: #e00e0e;
+}
+
+.notification {
+  text-align: center;
+  width: 100%;
+}
+
+@media (max-width: 1024px) and (min-width: 641px) {}
+@media (max-width: 640px) {
+  .visit-card {
+    width: 100%;
+    padding: 16px;
+  }
+
+  .visit-card .visit-body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .visit-row .label {
+    margin-right: 8px;
+  }
+
+  .visit-card .visit-row {
+    flex-direction: row;
+  }
+}

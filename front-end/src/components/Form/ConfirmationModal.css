@@ -1,0 +1,60 @@
+@import '../..//styles/variables.css';
+
+.confirm-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: #02060ABF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirm-box {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+}
+
+.confirm-icon {
+  background-image: url('../../Icons/ConfirmIcon.svg');
+  width: 100px;
+  height: 100px;
+  /* margin-bottom: 8px; */
+}
+
+.confirm-title {
+  font-family: var(--font-primary);
+  font-size: 96px;
+  font-weight: 800;
+  line-height: 120%;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.confirm-text {
+  font-family: var(--font-secondary);
+  font-weight: 600;
+  font-size: 24px;
+  color: #D1D5DB;
+  line-height: 150%;
+  margin-bottom: 24px;
+}
+
+.confirm-button {
+  font-family: var(--font-secondary);
+  background: #C90F12;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  padding: 24px 300px;
+  border-radius: 4px;
+}
+
+.confirm-button:hover {
+  background: #f6121d;
+}

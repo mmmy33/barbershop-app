@@ -1,8 +1,7 @@
 import './LoginPage.css'
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-
-const API_BASE = '/api';
+import { API_BASE, getAuthHeaders } from '../../api/config';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -17,9 +16,7 @@ export function LoginPage() {
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ email, password })
       });
 
@@ -27,12 +24,9 @@ export function LoginPage() {
         const data = await res.json();
         throw new Error(data.detail || 'Login failed');
       }
-
       const { access_token } = await res.json();
-
       localStorage.setItem('jwt', access_token);
-      navigate('/profile');
-
+      navigate('/');
     } catch (err) {
       setError(err.message);
     }

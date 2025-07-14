@@ -7,36 +7,15 @@ import BurgerTablet from '../../Icons/IconBurgerBig.svg';
 import BurgerMobile from '../../Icons/IconBurgerSmall.svg';
 import IconClose from '../../Icons/IconCloseBig.svg';
 
-export const HeaderNavigation = () => {
+export const HeaderNavigation = ({ navItems }) => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [isAdmin, setIsAdmin] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
 
   const openMenu = () => setIsMenuOpen(true);
   const closeMenu = () => setIsMenuOpen(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem('jwt');
-    if (token) {
-      setIsLoggedIn(true);
-
-      fetch('http://127.0.0.1:8000/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.role === 'admin') {
-            setIsAdmin(true);
-          }
-        })
-        .catch(error => console.error('Error fetching user data:', error));
-    } else {
-      setIsLoggedIn(false);
-    }
-  }, []);
 
   const handleScrollToSection = (href) => {
     const element = document.querySelector(href);
@@ -45,21 +24,44 @@ export const HeaderNavigation = () => {
     }
   };
 
-  const navItems = [
-    ...(isAdmin ? [{ id: 'admin', label: 'Admin', route: '/admin' }] : []),
-    { id: 'o-nas', label: 'O nas', href: '#o-nas' },
-    { id: 'nasze-prace', label: 'Nasze prace', href: '#nasze-prace' },
-    { id: 'jak-umowic', label: 'Jak umówić się?', href: '#kontakt' },
-    { id: 'nasze-uslugi', label: 'Nasze usługi', href: '#uslugi' },
-    { id: 'zespol', label: 'Zespół', href: '#zespol' },
-    { id: 'opinie', label: 'Opinie', href: '#opinie' },
-    { id: 'kontakty', label: 'Kontakty', href: '#kontakty' },
-    { id: 'profile', label: isLoggedIn ? 'Profile' : 'Log in', route: isLoggedIn ? '/profile' : '/login' },
-  ];
+  // useEffect(() => {
+  //   const token = localStorage.getItem('jwt');
+  //   if (token) {
+  //     setIsLoggedIn(true);
+
+  //     fetch('http://127.0.0.1:8000/api/auth/me', {
+  //       headers: {
+  //         'Authorization': `Bearer ${token}`,
+  //       }
+  //     })
+  //       .then(response => response.json())
+  //       .then(data => {
+  //         if (data.role === 'admin') {
+  //           setIsAdmin(true);
+  //         }
+  //       })
+  //       .catch(error => console.error('Error fetching user data:', error));
+  //   } else {
+  //     setIsLoggedIn(false);
+  //   }
+  // }, []);
+
+  // const navItems = [
+  //   ...(isAdmin ? [{ id: 'admin', label: 'Admin', route: '/admin' }] : []),
+  //   { id: 'o-nas', label: 'O nas', href: '#o-nas' },
+  //   { id: 'nasze-prace', label: 'Nasze prace', href: '#nasze-prace' },
+  //   { id: 'jak-umowic', label: 'Jak umówić się?', href: '#kontakt' },
+  //   { id: 'nasze-uslugi', label: 'Nasze usługi', href: '#uslugi' },
+  //   { id: 'zespol', label: 'Zespół', href: '#zespol' },
+  //   { id: 'opinie', label: 'Opinie', href: '#opinie' },
+  //   { id: 'kontakty', label: 'Kontakty', href: '#kontakty' },
+  //   { id: 'profile', label: isLoggedIn ? 'Profile' : 'Log in', route: isLoggedIn ? '/profile' : '/login' },
+  // ];
+
 
  return (
     <>
-      <header className="header-navigation">
+      <div className="header-navigation">
         <div className="header-logo-container">
           <img
             src={HeaderLogo}
@@ -100,7 +102,7 @@ export const HeaderNavigation = () => {
             </picture>
           </button>
         </div>
-      </header>
+      </div>
 
       {isMenuOpen && (
         <div className="burger-menu-overlay">

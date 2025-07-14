@@ -49,15 +49,16 @@
 .addon-item {
   display: flex;
   align-items: center;
+  background: #26303E;
   border: 1px solid #333;
   border-radius: 8px;
   padding: 12px;
   cursor: pointer;
 }
 
-.addon-item:hover {
+/* .addon-item:hover {
   background-color: #2a2a2a;
-}
+} */
 
 .addon-item input[type='checkbox'] {
   -webkit-appearance: none;
@@ -124,22 +125,15 @@
   .custom-form .select select {
     width: 100%;
   }
-
-  /* .custom-form .select {
-    width: 100%;
-  }
-
-  .custom-form .select select {
-    width: 100%;
-  } */
 }
 
 /* Mobile: ≤ 640px */
 @media (max-width: 640px) {
   .custom-form {
-    width: 100%;
+    width: 90%;
     min-width: unset;
-    padding: 1rem;
+    padding: 16 8px;
+    margin: 0 auto;
   }
 
   .buttons {

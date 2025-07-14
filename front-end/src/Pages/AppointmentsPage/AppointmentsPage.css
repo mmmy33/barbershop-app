@@ -1,0 +1,11 @@
+.appointments-container {
+  background: #fff;
+}
+
+.select-barber-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 18px 0;
+}

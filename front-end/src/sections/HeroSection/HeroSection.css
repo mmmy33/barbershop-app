@@ -5,8 +5,8 @@
   width: 100%;
   height: 560px;
   background-image: url('../../Images/HeroImage.png');
-  background-size: cover;
-  background-position: 70% center;
+  background-size: cover ;
+  background-position: 200% right;
   background-repeat: no-repeat;
   overflow: hidden;
 }

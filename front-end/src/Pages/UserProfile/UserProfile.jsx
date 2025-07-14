@@ -1,127 +1,196 @@
-import { useEffect, useState } from 'react';
+import './UserProfile.css';
+import { useEffect, useState, useMemo } from 'react';
+import { HeaderNavigation } from '../../sections/HeaderNavigation/HeaderNavigation';
+import { FooterSection } from '../../sections/FooterSection/FooterSection';
+import {getAuthHeaders} from '../../api/config';
+import { API_BASE } from '../../api/config';
 
 export const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [appointments, setAppointments] = useState({ upcoming: [], completed: [] });
-
-  const API_BASE = '/api';
+  const [error, setError] = useState(null);
 
   const token = localStorage.getItem('jwt');
 
-  const getAuthHeaders = () => ({
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  });
-
-  // user profile and appointments fetching
   useEffect(() => {
-    fetch(`${API_BASE}/auth/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(res => res.json())
-      .then(data => setUser(data));
+    if (!token) {
+      setError('Please log in first');
+      return;
+    }
 
-    fetch('http://127.0.0.1:8000/api/appointments/me', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(res => res.json())
-      .then(data => {
-        const mapWithAddons = list => (list || []).map(a => ({
-          ...a,
-          // предположим, что в ответе приходит массив объектов a.addons: [{ id, name, … }, …]
-          addonIds: Array.isArray(a.addons) ? a.addons.map(ad => ad.id) : []
-        }));
+    (async () => {
+      try {
+        const resUser = await fetch(`${API_BASE}/auth/me`, {
+          headers: getAuthHeaders(),
+        });
+        if (!resUser.ok) throw new Error(`Auth failed: ${resUser.status}`);
+        const userData = await resUser.json();
+        setUser(userData);
+
+        const resAppts = await fetch(`${API_BASE}/appointments/me`, {
+          headers: getAuthHeaders(),
+        });
+        if (!resAppts.ok) throw new Error(`Appointments failed: ${resAppts.status}`);
+        const apptData = await resAppts.json();
+
+        // adding field addonIds
+        const mapWithAddons = list =>
+          (list || []).map(a => ({
+            ...a,
+            addonIds: Array.isArray(a.addons) ? a.addons.map(ad => ad.id) : [],
+          }));
 
         setAppointments({
-          upcoming: mapWithAddons(data.upcoming),
-          completed: mapWithAddons(data.completed),
+          upcoming: mapWithAddons(apptData.upcoming),
+          completed: mapWithAddons(apptData.completed),
         });
-      });
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      }
+    })();
   }, [token]);
 
-  // id — это appointment.id, addonIds — массив addon_id для этой записи
+  // appointment(main service) & addon cancellation
   async function cancelAppointment(id, addonIds = []) {
     try {
+      // delete addons
       if (Array.isArray(addonIds)) {
         for (const addonId of addonIds) {
-          await fetch(
+          const resAddon = await fetch(
             `${API_BASE}/appointments/${id}/addon/${addonId}`,
             { method: 'DELETE', headers: getAuthHeaders() }
           );
+          if (!resAddon.ok) {
+            throw new Error(`Failed to delete addon ${addonId}`);
+          }
         }
       }
-
-      await fetch(
+      // delete main appointment
+      const resMain = await fetch(
         `${API_BASE}/appointments/${id}`,
         { method: 'DELETE', headers: getAuthHeaders() }
       );
-
+      if (!resMain.ok) {
+        throw new Error(`Failed to delete appointment ${id}`);
+      }
+      // refresh state
       setAppointments(prev => ({
         upcoming: prev.upcoming.filter(a => a.id !== id),
         completed: prev.completed,
       }));
     } catch (err) {
-      console.error('Error cancelling appointment:', err);
-      alert('Error cancelling appointment. Please try again later.');
+      console.error(err);
+      alert(err.message);
     }
   }
 
+  const navItems = useMemo(() => {
+      const items = [
+        { id: 'main-page', label: 'Main', route: '/' },
+      ];
+      if (user?.role === 'admin') {
+        items.unshift({ id: 'admin', label: 'Admin', route: '/admin' });
+        items.unshift({ id: 'appointments', label: 'Apps', route: '/appointments' });
+      }
+      return items;
+    }, [user]);
 
-
-  if (!user) return <p>Searching your profile...</p>;
+  if (error) return <p style={{ color: 'red' }}>{error}</p>;
 
   return (
-    <div className="box">
-      <h2 className="title is-4">Hello, {user.name}</h2>
+    <div className="user-profile-container">
+      <HeaderNavigation navItems={navItems} />
 
-      {appointments.upcoming.length > 0 ? (
-        <div className="card" style={{ backgroundColor: '#2a4d32', border: '1px solid #1e3a2d' }}>
-          <header className="card-header" style={{ backgroundColor: '#1e3a2d' }}>
-            <p className="card-header-title" style={{ color: '#ffffff', fontWeight: 'bold' }}>Найближчий візит</p> 
-          </header>
-          <div className="card-content">
-            <div className="content" style={{ color: '#d3d3d3', fontSize: '16px', lineHeight: '1.8', padding: '1rem' }}>
-              <p><strong style={{ color: '#ffffff' }}>Дата:</strong> <span style={{ color: '#d3d3d3' }}>{appointments.upcoming[0].scheduled_date}</span></p>
-              <p><strong style={{ color: '#ffffff' }}>Час:</strong> <span style={{ color: '#d3d3d3' }}>{appointments.upcoming[0].scheduled_time}</span></p>
-              <p><strong style={{ color: '#ffffff' }}>Барбер:</strong> <span style={{ color: '#d3d3d3' }}>{appointments.upcoming[0].barber_name}</span></p>
-              <p><strong style={{ color: '#ffffff' }}>Послуга:</strong> <span style={{ color: '#d3d3d3' }}>{appointments.upcoming[0].full_service_title}</span></p>
+      <div className="user-profile-box">
+        {appointments.upcoming.length > 0 ? (
+          <div className="visit-card scheduled">
+            <div className="visit-header">
+              <span>Zaplanowany</span>
+              <i className="fas fa-calendar-alt"></i>
             </div>
-            <button
-              className="button is-danger"
-              onClick={() => cancelAppointment(
-                appointments.upcoming[0].id,
-                appointments.upcoming[0].addonIds
-              )}
-            >
-              Cancel
-            </button>
+            <div className="visit-body">
+              {(() => {
+                const next = appointments.upcoming[0];
+                return (
+                  <>
+                    <div className="visit-row">
+                      <span className="label">Twój barber:</span>
+                      <span className="value">{next.barber_name}</span>
+                    </div>
+                    <div className="visit-row">
+                      <span className="label">Service:</span>
+                      <span className="value">{next.full_service_title}</span>
+                    </div>
+                    <div className="visit-row">
+                      <span className="label">Kiedy:</span>
+                      <span className="value">{next.scheduled_date}</span>
+                    </div>
+                    <div className="visit-row">
+                      <span className="label">O której godzinie:</span>
+                      <span className="value">{next.scheduled_time}</span>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+            <div className="visit-actions">
+              <button
+                className="cancel-button" onClick={() =>
+                cancelAppointment(appointments.upcoming[0].id,appointments.upcoming[0].addonIds)}
+              >
+                Anulować
+              </button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="notification is-light is-success" style={{ backgroundColor: '#3b5d34', color: '#ffffff' }}>
-          Найближчих візитів немає.
-        </div>
-      )}
+        ) : (
+          <div className="notification is-warning">
+            Brak zaplanowanych wizyt
+          </div>
+        )}
 
-      <hr />
-
-      <h3 className="title is-5">Мої попередні візити:</h3>
-      {appointments.completed.length === 0 ? (
-        <p>Візитів поки не було.</p>
-      ) : (
-        <ul>
-          {appointments.completed.map((visit, i) => (
-            <li key={visit.id || i}>
-              <p><b>{visit.scheduled_date}</b> о {visit.scheduled_time} — {visit.full_service_title}, барбер: {visit.barber_name}</p>
-            </li>
-          ))}
-        </ul>
-      )}
+        {appointments.completed.length > 0 ? (
+          <div className="visit-card completed">
+            <div className="visit-header">
+              <span>Zakończony</span>
+              <i className="fas fa-check-circle"></i>
+            </div>
+            <div className="visit-body">
+              {(() => {
+                const last = appointments.completed[0];
+                return (
+                  <>
+                    <div className="visit-row">
+                      <span className="label">Twój barber:</span>
+                      <span className="value">{last.barber_name}</span>
+                    </div>
+                    <div className="visit-row">
+                      <span className="label">Service:</span>
+                      <span className="value">{last.full_service_title}</span>
+                    </div>
+                    <div className="visit-row">
+                      <span className="label">Kiedy:</span>
+                      <span className="value">{last.scheduled_date}</span>
+                    </div>
+                    <div className="visit-row">
+                      <span className="label">O której godzinie:</span>
+                      <span className="value">{last.scheduled_time}</span>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+            {/* <div className="visit-actions">
+              <button className="button is-outlined">Usuń zapis</button>
+            </div> */}
+          </div>
+        ) : (
+          <div className="notification is-info">
+            Brak zakończonych wizyt
+          </div>
+        )}
+      </div>
+      <FooterSection />
     </div>
   );
 };

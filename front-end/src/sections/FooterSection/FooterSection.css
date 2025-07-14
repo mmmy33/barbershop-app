@@ -4,20 +4,8 @@
   margin-top: 150px;
 }
 
-.footer-cta {
-  text-align: center;
-  margin-bottom: 164px;
-}
 
-.footer-cta-title {
-  font-family: var(--font-privary);
-  font-size: 40px;
-  font-weight: 700;
-  margin-bottom: 24px;
-  color: #FFFFFF;
-}
-
-.footer-bottom {
+.footer-container {
   background: rgb(3, 8, 18);
   font-family: var(--font-secondary);
   display: flex;
@@ -93,6 +81,10 @@
     flex-direction: column;
   }
 
+  .footer-container {
+    flex-direction: column;
+  }
+
   .footer-map-container {
     max-width: 100%;
   }
@@ -104,11 +96,7 @@
     margin-top: 48px;
   }
 
-  .footer-cta {
-    margin-bottom: 56px;
-  }
-
-  .footer-bottom {
+  .footer-container {
     flex-direction: column;
     padding: 24px 20px;
     gap: 28px;
