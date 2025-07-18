@@ -52,6 +52,7 @@
 }
 
 .burger-menu-content {
+  position: fixed;
   background: rgba(2, 6, 10, 0.75);
   width: 100%;
   display: flex;
@@ -154,7 +155,7 @@
   }
 
   .burger-menu-nav {
-    margin-top: 78px;
+    margin-top: 20px;
   }
 
   .burger-menu-logo {

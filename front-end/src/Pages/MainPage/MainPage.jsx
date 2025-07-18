@@ -21,9 +21,9 @@ export const MainPage = () => {
           { id: 'jak-umowic', label: 'Jak umówić się?', href: '#kontakt' },
           { id: 'nasze-uslugi', label: 'Nasze usługi', href: '#uslugi' },
           { id: 'zespol', label: 'Zespół', href: '#zespol' },
+          { id: 'profile', label: 'Profile' , route: '/profile'},
           { id: 'opinie', label: 'Opinie', href: '#opinie' },
           { id: 'kontakty', label: 'Kontakty', href: '#kontakty' },
-          { id: 'profile', label: 'Profile' , route: '/profile'},
         ]}
       />
       <HeroSection />

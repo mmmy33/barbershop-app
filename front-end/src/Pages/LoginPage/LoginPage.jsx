@@ -1,7 +1,8 @@
 import './LoginPage.css'
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { API_BASE, getAuthHeaders } from '../../api/config';
+import { HeaderNavigation } from '../../sections/HeaderNavigation/HeaderNavigation';
+import { API_BASE } from '../../api/config';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ export function LoginPage() {
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
 
@@ -34,56 +35,63 @@ export function LoginPage() {
 
   return (
     <section className="section-login">
-      <div>
-        <h1 className="title">Login</h1>
-        <form onSubmit={handleSubmit} className="box">
-          {error && <p className="notification is-danger">{error}</p>}
-          <div className="field">
-            <label className="label">Email</label>
-            <div className="control has-icons-left">
-              <input
-                className="input"
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-              />
-              <span className="icon is-small is-left">
-                <i className="fas fa-envelope" />
-              </span>
+      <HeaderNavigation navItems={[
+          { id: 'main-page', label: 'Main', route: '/' },
+        ]}
+      />
+      <div className="login-container">
+        <div>
+          <h1 className="title">Login</h1>
+          <form onSubmit={handleSubmit} className="box login-form">
+            {error && <p className="notification is-danger">{error}</p>}
+            <div className="field">
+              <label className="label">Email</label>
+              <div className="control has-icons-left">
+                <input
+                  className="input"
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                />
+                <span className="icon is-small is-left">
+                  <i className="fas fa-envelope" />
+                </span>
+              </div>
             </div>
-          </div>
 
-          <div className="field">
-            <label className="label">Password</label>
-            <div className="control has-icons-left">
-              <input
-                className="input"
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-              />
-              <span className="icon is-small is-left">
-                <i className="fas fa-lock" />
-              </span>
+            <div className="field">
+              <label className="label">Password</label>
+              <div className="control has-icons-left">
+                <input
+                  className="input"
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                />
+                <span className="icon is-small is-left">
+                  <i className="fas fa-lock" />
+                </span>
+              </div>
             </div>
-          </div>
 
-          <div className="field">
-            <div className="control">
-              <button className="button is-primary login-button" type="submit">
-                Login
-              </button>
+            <div className="field">
+              <div className="control login-button-container">
+                <button className="button is-primary login-button" type="submit">
+                  Login
+                </button>
+              </div>
             </div>
-          </div>
-        </form>
-        <p className='login-subtitle'>
-          Don't have an account? <Link to="/register">Register here</Link>
-        </p>
+          </form>
+          <p className='login-subtitle'>
+            Don't have an account? <Link to="/register">Register here</Link>
+          </p>
+        </div>
       </div>
+
     </section>
   );
 }

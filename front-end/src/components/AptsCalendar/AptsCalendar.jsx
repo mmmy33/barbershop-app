@@ -41,7 +41,7 @@ export function AptsCalendar({ barberId }) {
         setEvents(evs)
       })
       .catch(err => {
-        console.error('Не удалось загрузить записи:', err)
+        console.error('Не вдалося загрузити записи:', err)
         setEvents([])
       })
   }, [barberId])
@@ -61,7 +61,6 @@ export function AptsCalendar({ barberId }) {
     )
   }
   
-  // при перетаскивании события
   const handleEventDrop = async info => {
     const token = localStorage.getItem('jwt')
     const res = await fetch(`/api/appointments/${info.event.id}`, {
@@ -73,16 +72,10 @@ export function AptsCalendar({ barberId }) {
       body: JSON.stringify({ scheduled_time: info.event.start.toISOString() })
     })
     if (!res.ok) {
-      alert('Ошибка сохранения, откатываю')
+      alert('Помилка зберігання. Відкат')
       info.revert()
     }
   }
-
-  // выбор пустого слота для создания
-  // const handleDateSelect = selectInfo => {
-    // здесь можно открывать модалку создания новой записи,
-    // передавая selectInfo.start и barberId
-  // }
 
   return (
     <FullCalendar
@@ -110,45 +103,36 @@ export function AptsCalendar({ barberId }) {
         hour12: false
       }}
 
-      // Шаг в 15 минут для каждой ячейки
       slotDuration="00:15:00"
-      // Интервал подписи каждой ячейки (например, показывать время каждые 15 минут)
       slotLabelInterval="00:15:00"
-      // При перетаскивании/выборе привязка к шагу 15 минут
       snapDuration="00:15:00"
       slotMinTime="09:00:00"
 
       viewDidMount={({ el }) => {
-        // 1) Верхняя панель с кнопками и заголовком
         el.querySelectorAll('.fc-toolbar, .fc-header-toolbar').forEach(node => {
           node.style.setProperty('background-color', '#fff', 'important');
         });
 
-        // 2) Заголовки дней (Mon, Tue…)
         el.querySelectorAll('.fc-col-header-cell').forEach(node => {
           node.style.backgroundColor = '#fff';
           node.style.borderColor     = '#ccc';
           node.style.color     = '#ccc';
         });
 
-        // 3) All-day-ряд
         el.querySelectorAll('.fc-timegrid-all-day').forEach(node => {
           node.style.backgroundColor = '#fff';
           node.style.borderColor     = '#ccc';
         });
 
-        // 4) Ось времени слева (12am, 1am…)
         el.querySelectorAll('.fc-timegrid-slot-label').forEach(node => {
           node.style.backgroundColor = '#fff';
           node.style.borderColor     = '#ccc';
         });
 
-        // 5) Вся scrollgrid-сетка (т. е. тело календаря с часовыми ячейками)
         el.querySelectorAll('.fc-scrollgrid-section, .fc-scrollgrid').forEach(node => {
           node.style.backgroundColor = '#fff';
         });
 
-        // 6) Сами тайм-ячейки (с разделителями)
         el.querySelectorAll('.fc-timegrid-slot-lane').forEach(node => {
           node.style.backgroundColor = '#fff';
           node.style.borderTop       = '1px solid #ccc';

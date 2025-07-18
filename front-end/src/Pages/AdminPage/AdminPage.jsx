@@ -15,6 +15,7 @@ export default function AdminPage() {
   const [loadingUser, setLoadingUser] = useState(true);
 
   const [barbers, setBarbers] = useState([]);
+  const [selectedBarberIds, setSelectedBarberIds] = useState([]);
 
   const [services, setServices] = useState([]);
   const [serviceName, setServiceName] = useState('');
@@ -130,45 +131,52 @@ export default function AdminPage() {
     // Services fetch
     useEffect(() => {
       fetch(`${API_BASE}/services/`, { headers: getAuthHeaders() })
-        .then((res) => res.json())
-        .then((data) => setServices(data))
-        .catch((err) => console.error('Error loading services', err));
+        .then(res => res.json())
+        .then(data => {
+          console.log(data);
+          setServices(data);
+        })
+        .catch(error => console.error('Error fetching services:', error));
     }, []);
 
     // Function to add a new service
-    const addService = async (serviceData) => {
+    const handleService = e => {
+      e.preventDefault();
+      const newService = {
+        name: serviceName,
+        duration: parseInt(serviceDuration, 10),
+        price: parseFloat(servicePrice),
+        barbers: selectedBarberIds.map(id => ({ id }))  // или просто [1,2,3], смотря что принимает API
+      };
+      addService(newService);
+    };
+
+    const addService = async serviceData => {
       try {
         const res = await fetch(`${API_BASE}/services/`, {
           method: 'POST',
           headers: getAuthHeaders(),
           body: JSON.stringify(serviceData),
         });
-        if (!res.ok) throw new Error('Failed to add service');
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || `Status ${res.status}`);
+        }
         const createdService = await res.json();
-        setServices((prevServices) => [...prevServices, createdService]);
+        setServices(prev => [...prev, createdService]);
         setError('');
         setAddServiceMessage('Created successfully');
         setTimeout(() => setAddServiceMessage(''), 2500);
-      } catch (error) {
-        setError(`Failed to add service: ${error.message}`);
+      } catch (err) {
+        console.error('Failed to add service', err);
+        setError(`Failed to add service: ${err.message}`);
       }
     };
 
-    // Handle 'Add Service' form submission
-    const handleService = (e) => {
-      e.preventDefault();
-      const newService = {
-        name: serviceName,
-        duration: parseInt(serviceDuration),
-        price: parseFloat(servicePrice),
-      };
-      addService(newService);
-    };
-
-    // Function to delete a service by ID
+      // Function to delete a service by ID
     const deleteService = async (serviceId) => {
       try {
-        const res = await fetch(`${API_BASE}/services/${serviceId}/`, {
+        const res = await fetch(`${API_BASE}/services/${serviceId}`, {
           method: 'DELETE',
           headers: getAuthHeaders(),
         });
@@ -182,6 +190,43 @@ export default function AdminPage() {
       }
     };
   //#endregion Services
+
+  //#region barbers gap
+  // Локально сохраняем правки gap в стейт
+    const handleGapChange = (barberId, gapValue) => {
+      setBarbers(prev =>
+        prev.map(b =>
+          b.id === barberId
+            ? { ...b, gap_minutes: Number(gapValue) }
+            : b
+        )
+      );
+    };
+
+    // Сохраняем на бэке
+    const saveGap = async (barberId) => {
+      const barber = barbers.find(b => b.id === barberId);
+      try {
+        const res = await fetch(`${API_BASE}/barbers/${barberId}/`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ gap_minutes: barber.gap_minutes })
+        });
+        if (!res.ok) {
+          const { detail } = await res.json();
+          throw new Error(detail || `Status ${res.status}`);
+        }
+        const updated = await res.json();
+        setBarbers(prev =>
+          prev.map(b => (b.id === barberId ? updated : b))
+        );
+        setError('');
+      } catch (err) {
+        console.error('Failed to save gap', err);
+        setError(`Could not save gap: ${err.message}`);
+      }
+    };
+  //#endregion barbers gap
 
   //#region Addons
     // Addons fetch
@@ -217,7 +262,7 @@ export default function AdminPage() {
     // Function to delete an addon by ID
     const deleteAddon = async (addonId) => {
       try {
-        const res = await fetch(`${API_BASE}/addons/${addonId}/`, {
+        const res = await fetch(`${API_BASE}/addons/${addonId}`, {
           method: 'DELETE',
           headers: getAuthHeaders(),
         });
@@ -357,8 +402,134 @@ export default function AdminPage() {
         </div>
 
 
+        <div className="box">
+          <h2 className="subtitle">Add New Service</h2>
+          {addServiceMessage && (
+            <div className="notification is-success">{addServiceMessage}</div>
+          )}
+
+          <form onSubmit={handleService}>
+            {/* Service Name */}
+            <div className="field">
+              <label className="label">Service Name</label>
+              <div className="control">
+                <input
+                  className="input"
+                  type="text"
+                  value={serviceName}
+                  onChange={e => setServiceName(e.target.value)}
+                  placeholder="Enter service name"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Duration */}
+            <div className="field">
+              <label className="label">Duration (minutes)</label>
+              <div className="control">
+                <input
+                  className="input"
+                  type="number"
+                  value={serviceDuration}
+                  onChange={e => setServiceDuration(e.target.value)}
+                  placeholder="Enter service duration"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Price */}
+            <div className="field">
+              <label className="label">Price</label>
+              <div className="control">
+                <input
+                  className="input"
+                  type="number"
+                  step="0.01"
+                  value={servicePrice}
+                  onChange={e => setServicePrice(e.target.value)}
+                  placeholder="Enter service price"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Barbers Multiselect */}
+            <div className="field">
+              <label className="label">Barbers</label>
+              <div className="control">
+                <div className="select is-multiple">
+                  <select
+                    multiple
+                    size={Math.min(4, barbers.length)}
+                    value={selectedBarberIds}
+                    onChange={e =>
+                      setSelectedBarberIds(
+                        Array.from(e.target.selectedOptions, o => Number(o.value))
+                      )
+                    }
+                    required
+                  >
+                    {barbers.map(b => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <div className="field is-grouped">
+              <div className="control">
+                <button className="button is-primary" type="submit">
+                  Add Service
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
 
 
+        {/* List of existing services */}
+        <div className="box">
+          <h2 className="subtitle">Existing Services</h2>
+          <table className="table is-fullwidth is-striped">
+            <thead>
+              <tr>
+                <th>Service Name</th>
+                <th>Duration</th>
+                <th>Price</th>
+                <th>Barbers</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {services.map(service => (
+                <tr key={service.id}>
+                  <td>{service.name}</td>
+                  <td>{service.duration} min</td>
+                  <td>{service.price} zł</td>
+                  <td>
+                    {service.barbers && service.barbers.length > 0
+                      ? service.barbers.map(b => b.name).join(', ')
+                      : '—'}
+                  </td>
+                  <td>
+                    <button
+                      className="button is-small is-danger"
+                      onClick={() => deleteService(service.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* Unavailable Times */}
         {/* <div className="box">
@@ -392,7 +563,7 @@ export default function AdminPage() {
         </div> */}
 
         {/* Add new service */}
-        <div className="box">
+        {/* <div className="box">
           <h2 className="subtitle">Add New Service</h2>
           {addServiceMessage && <div className="notification is-success">{addServiceMessage}</div>}
           <form onSubmit={handleService}>
@@ -446,39 +617,9 @@ export default function AdminPage() {
               </div>
             </div>
           </form>
-        </div>
+        </div> */}
 
-        {/* List of existing services */}
-        <div className="box">
-          <h2 className="subtitle">Existing Services</h2>
-          <table className="table is-fullwidth is-striped">
-            <thead>
-              <tr>
-                <th>Service Name</th>
-                <th>Duration</th>
-                <th>Price</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {services.map((service) => (
-                <tr key={service.id}>
-                  <td>{service.name}</td>
-                  <td>{service.duration} min</td>
-                  <td>{service.price} zł</td>
-                  <td>
-                    <button
-                      className="button is-small is-danger"
-                      onClick={() => deleteService(service.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+
 
         {/* Add new addon */}
         <div className="box">
@@ -562,6 +703,35 @@ export default function AdminPage() {
                     >
                       Delete
                     </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="box">
+          <h2 className="subtitle">Barbers — set gap between appointments</h2>
+          <table className="table is-fullwidth is-striped">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Gap (minutes)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {barbers.map(barber => (
+                <tr key={barber.id}>
+                  <td>{barber.name}</td>
+                  <td>
+                    <input
+                      type="number"
+                      value={barber.gap_minutes}
+                      min={0}
+                      className="input is-small"
+                      onChange={e => handleGapChange(barber.id, e.target.value)}
+                      onBlur={() => saveGap(barber.id)}
+                    />
                   </td>
                 </tr>
               ))}

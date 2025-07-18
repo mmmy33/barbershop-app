@@ -1,6 +1,7 @@
 import './RegistrationPage.css';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { HeaderNavigation } from '../../sections/HeaderNavigation/HeaderNavigation';
 // import { API_BASE, getAuthHeaders } from '../../api/config';
 
 
@@ -59,6 +60,10 @@ export function RegistrationPage() {
 
   return (
     <section className="section-registration">
+      <HeaderNavigation navItems={[
+         { id: 'main-page', label: 'Main', route: '/' },
+        ]}
+      />
       <div className="registration-container">
         <h1 className="title">
           {step === 1 ? 'Utwórz konto' : 'Email Verification'}
@@ -148,7 +153,7 @@ export function RegistrationPage() {
             {/* Submit */}
             <div className="field">
               <div className="control">
-                <button className="button is-primary" type="submit">
+                <button className="button is-primary registration-button" type="submit">
                   Zweryfikuj
                 </button>
               </div>

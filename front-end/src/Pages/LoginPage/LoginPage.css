@@ -1,9 +1,26 @@
 @import '../../styles/variables.css';
 
-.section-login {
+.login-container {
   max-width: 600px;
-  margin: 50px auto;
+  margin: 42px auto;
   font-family: var(--font-primary);
+  background: rgba(9, 19, 30, 0.72) !important;
+  padding: 32px;
+  border: 2px solid rgb(37, 49, 67);
+  border-radius: 8px;
+  box-shadow: 0 0.5em 1em -0.125em hsla(0deg, 0%, 100%,0.1),0 0px 0 1px hsla(0deg, 0%, 100%,0.02);
+}
+
+.section-login input {
+  background: rgba(9, 19, 30, 0.72) !important;
+}
+
+.login-form {
+  background: none !important;
+  box-shadow: none !important;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .title {
@@ -11,7 +28,12 @@
 }
 
 .login-button {
-  font-weight: 600;
+  background-color: #C90F12;
+  color: #fff;
+}
+
+.login-button:hover {
+  background-color: #A00B0E;
 }
 
 .login-subtitle {
@@ -20,7 +42,13 @@
 
 @media (max-width: 1024px) and (min-width: 641px) {}
 @media (max-width: 640px) {
-  .section-login {
-    margin: 50px 24px;
+  .login-container {
+    margin: 24px;
+    padding: 24px 20px;
+  }
+
+  .login-button {
+    margin-top: 10px;
+    width: 100%;
   }
 }

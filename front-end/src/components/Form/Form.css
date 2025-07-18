@@ -8,7 +8,7 @@
 }
 
 .custom-form {
-  background: rgba(9, 19, 30, 0.72) !important;
+  background: rgba(9, 19, 30, 0.985) !important;
   border: 2px solid rgb(37, 49, 67);
   border-radius: 8px;
   width: 100%;
@@ -24,6 +24,11 @@
   gap: 16px;
   justify-content: flex-end;
   flex-wrap: wrap;
+}
+
+.custom-form input,
+.custom-form select {
+  border-color: #26303E;
 }
 
 #service-select,
@@ -56,9 +61,9 @@
   cursor: pointer;
 }
 
-/* .addon-item:hover {
-  background-color: #2a2a2a;
-} */
+.label {
+  color: #E9ECF1;
+}
 
 .addon-item input[type='checkbox'] {
   -webkit-appearance: none;
@@ -85,9 +90,8 @@
 .addon-info {
   display: flex;
   justify-content: space-between;
-  flex: 1;
-  font-size: 0.95rem;
   align-items: center;
+  flex: 1;
   flex-wrap: wrap;
 }
 
@@ -109,6 +113,15 @@
   text-align: right;
 }
 
+.box .mt-4 {
+  box-shadow: 0 0.5em 1em -0.125em hsla(0, 0%, 76%, 0.1),0 0px 0 1px hsla(0deg, 0%, 100%,0.02);
+}
+
+.total-label {
+  font-weight: 700;
+  color: #f5f5f5;
+  margin-bottom: 8px;
+}
 
 /* Tablet: ≤ 1024px , > 640px */
 @media (max-width: 1024px) and (min-width: 641px) {
@@ -116,7 +129,7 @@
     width: 100%;
     min-width: unset;
     max-width: unset;
-    padding: 1rem 1.25rem;
+    padding: 16px 20px;
     box-sizing: border-box;
   }
 
@@ -130,10 +143,11 @@
 /* Mobile: ≤ 640px */
 @media (max-width: 640px) {
   .custom-form {
-    width: 90%;
+    width: 97%;
     min-width: unset;
     padding: 16 8px;
-    margin: 0 auto;
+    margin-top: 60px;
+    margin-bottom: 200px;
   }
 
   .buttons {
@@ -244,5 +258,3 @@
   fill: #f5f5f5;
 }
 /* #endregion datepicker styles */
-
-
