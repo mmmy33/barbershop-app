@@ -6,14 +6,17 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { pl } from 'date-fns/locale';
 import ConfirmationModal from './ConfirmationModal';
 import './Form.css';
-// import { set } from 'date-fns';
-
 
 const Form = ({ closeModal }) => {
+  const token = localStorage.getItem('jwt');
   //#region useStates
   const [barbers, setBarbers] = useState([]);
+
   const [services, setServices] = useState([]);
+  const [servicesForBarber, setServicesForBarber] = useState([]);
+
   const [addons, setAddons] = useState([]);
+
   const [timeslots, setTimeslots] = useState([]);
 
   const [name, setName] = useState('');
@@ -41,33 +44,45 @@ const Form = ({ closeModal }) => {
   //#endregion useStates
 
   //#region Memoized services
-  const servicesForBarber = useMemo(() => {
-    return services;
-  }, [services]);
+  const mergedServicesForBarber = useMemo(() => {
+    // servicesForBarber: [{ service_id, duration }]
+    // services: [{ id, name, price }]
+    return servicesForBarber.map(barberSvc => {
+      const svc = services.find(s => Number(s.id) === Number(barberSvc.service_id));
+      return svc
+        ? {
+            id: svc.id,
+            name: svc.name,
+            price: svc.price,
+            duration: barberSvc.duration
+          }
+        : null;
+    }).filter(Boolean);
+  }, [servicesForBarber, services]);
 
   const totalDuration = useMemo(() => {
-    const serviceDuration = services.find(service => service.id === selectedServiceId)?.duration || 0;
+    const serviceDuration = mergedServicesForBarber.find(service => service.id === selectedServiceId)?.duration || 0;
     const addonsDuration = selectedAddons.reduce((acc, addonId) => {
       const addon = addons.find(a => a.id === addonId);
       return acc + (addon?.duration || 0);
     }, 0);
 
     return serviceDuration + addonsDuration;
-  }, [selectedServiceId, selectedAddons, services, addons]);
+  }, [selectedServiceId, selectedAddons, mergedServicesForBarber, addons]);
 
   const totalPrice = useMemo(() => {
-    const servicePrice = services.find(service => service.id === selectedServiceId)?.price || 0;
+    const servicePrice = mergedServicesForBarber.find(service => service.id === selectedServiceId)?.price || 0;
     const addonsPrice = selectedAddons.reduce((acc, addonId) => {
       const addon = addons.find(a => a.id === addonId);
       return acc + (addon?.price || 0);
     }, 0);
 
     return servicePrice + addonsPrice;
-  }, [selectedServiceId, selectedAddons, services, addons]);
+  }, [selectedServiceId, selectedAddons, mergedServicesForBarber, addons]);
   //#endregion Memoized services
 
   //#region handlers (change)
-  const handeNameChange = (event) => {
+  const handleNameChange = (event) => {
     setName(event.target.value);
     setHasNameError(false);
   };
@@ -80,6 +95,7 @@ const Form = ({ closeModal }) => {
   const handleBarberChange = (event) => {
     setUserId(+event.target.value);
     setHasBarberError(false);
+    setSelectedServiceId(0);
   };
 
   const handleServiceChange = (event) => {
@@ -123,7 +139,7 @@ const Form = ({ closeModal }) => {
   // #region fetches
     // user fetch
     useEffect(() => {
-      fetch(`${API_BASE}/auth/me/`, { headers: getAuthHeaders() })
+      fetch(`${API_BASE}/auth/me`, { headers: getAuthHeaders() })
         .then(res => res.json())
         .then(json => {
           if (json.name) setName(json.name);
@@ -134,13 +150,7 @@ const Form = ({ closeModal }) => {
 
     // barbers fetch
     useEffect(() => {
-      const token = localStorage.getItem('jwt');
-      fetch(`${API_BASE}/barbers/`, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      })
+      fetch(`${API_BASE}/barbers/`, { headers: getAuthHeaders() })
         .then(res => {
           return res.json();
         })
@@ -155,15 +165,8 @@ const Form = ({ closeModal }) => {
 
     // services fetch
     useEffect(() => {
-      const token = localStorage.getItem('jwt');
-      console.log('JWT для services:', token);
       console.log('GET /api/services');
-      fetch(`${API_BASE}/services/`, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      })
+      fetch(`${API_BASE}/services/`, { headers: getAuthHeaders() })
         .then(res => {
           if (!res.ok) throw new Error(`Status ${res.status}`);
           return res.json();
@@ -181,15 +184,28 @@ const Form = ({ closeModal }) => {
         });
     }, []);
 
-    // addons fetch
+    // services for barber fetch
     useEffect(() => {
-      const token = localStorage.getItem('jwt');
-      fetch(`${API_BASE}/addons/`, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+      if (!userId) {
+        setServicesForBarber([]);
+        return;
+      }
+      fetch(`${API_BASE}/barbers/${userId}/services`, { headers: getAuthHeaders() })
+      .then(res => res.json())
+      .then(json => {
+        // json could be array or an object with .services
+        const list = Array.isArray(json) ? json : (json.services ?? json.data ?? []);
+        setServicesForBarber(list);
       })
+      .catch(err => {
+        console.error('❌ fetch services for barber error:', err);
+        setServicesForBarber([]);
+      });
+    }, [userId]);
+
+    // Addons fetch
+    useEffect(() => {
+      fetch(`${API_BASE}/addons/`, { headers: getAuthHeaders() })
         .then(res => {
           if (!res.ok) throw new Error(`Status ${res.status}`);
           return res.json();
@@ -204,7 +220,7 @@ const Form = ({ closeModal }) => {
         });
     }, []);
 
-    // timeslots fetch
+    // Timeslots fetch
     useEffect(() => {
     if (!(userId && selectedServiceId && selectedDate)) {
       setTimeslots([]);
@@ -220,9 +236,8 @@ const Form = ({ closeModal }) => {
           target_date: formatLocalDate(selectedDate),
         });
 
-        const res = await fetch(`${API_BASE}/timeslots/available?${qs}`, {
-          headers: getAuthHeaders(),
-        });
+        const res = await fetch(`${API_BASE}/timeslots/available?${qs}`,
+          { headers: getAuthHeaders() });
         if (!res.ok) {
           const err = await res.json();
           console.error("Slots fetch failed:", err);
@@ -244,6 +259,7 @@ const Form = ({ closeModal }) => {
     fetchAvailableSlots();
     }, [userId, selectedServiceId, selectedAddons, selectedDate]);
   // #endregion fetches
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -268,7 +284,7 @@ const Form = ({ closeModal }) => {
 
     const payload = {
       name,
-      phoneNumber,
+      phone_number: phoneNumber,
       barberId: userId,
       serviceId: selectedServiceId,
       addonIds: selectedAddons,
@@ -280,22 +296,17 @@ const Form = ({ closeModal }) => {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/appointments`, {
+      const response = await fetch(`${API_BASE}/appointments/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          name,
-          phoneNumber,
-          barberId: userId,
-          serviceId: selectedServiceId,
-          addonIds: selectedAddons,
-          scheduled_time: `${formatLocalDate(selectedDate)}T${selectedTime}:00`
-        })
+        body: JSON.stringify(payload)
       });
       if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Appointment error:', errorData);
         throw new Error(`Error ${response.status}`);
       }
 
@@ -336,7 +347,7 @@ const Form = ({ closeModal }) => {
         onSubmit={handleSubmit}
       >
         <div className="field">
-          <label className="label" htmlFor="name">Name</label>
+          <label className="label" htmlFor="name">Imię</label>
           <div className={classNames('control', {
             'has-icons-right': hasNameError,
           })}>
@@ -346,9 +357,9 @@ const Form = ({ closeModal }) => {
                 'is-danger': hasNameError,
               })}
               type="text"
-              placeholder="Name"
+              placeholder={name ? name : 'Wpisz swoje imię'}
               value={name}
-              onChange={handeNameChange}
+              onChange={handleNameChange}
             />
 
             {hasNameError && (
@@ -358,13 +369,13 @@ const Form = ({ closeModal }) => {
             )}
 
             {hasNameError && (
-              <p className="help is-danger">Name is required</p>
+              <p className="help is-danger">Imię jest wymagane</p>
             )}
           </div>
         </div>
 
         <div className="field">
-          <label className="label" htmlFor="phone-number">Phone</label>
+          <label className="label" htmlFor="phone-number">Telefon</label>
           <div className={classNames('control', {
             'has-icons-right': hasPhoneNumberError,
           })}>
@@ -380,7 +391,7 @@ const Form = ({ closeModal }) => {
             />
 
             {hasPhoneNumberError && (
-              <p className="help is-danger"> Please enter a valid Polish number ( +48XXXXXXXXX )</p>
+              <p className="help is-danger">Telefon jest wymagany ( +48XXXXXXXXX )</p>
             )}
           </div>
         </div>
@@ -397,7 +408,7 @@ const Form = ({ closeModal }) => {
                 value={userId}
                 onChange={handleBarberChange}
               >
-                <option value="0" disabled>Select a Barber</option>
+                <option value="0" disabled>Wybierz Barbera</option>
                 {barbers.map(barber => (
                   <option key={barber.id} value={barber.id}>
                     {barber.name}
@@ -412,7 +423,7 @@ const Form = ({ closeModal }) => {
           </div>
 
           {hasBarberError && (
-            <p className="help is-danger">Please select a Barber</p>
+            <p className="help is-danger">Proszę wybrać Barbera</p>
           )}
         </div>
 
@@ -432,10 +443,10 @@ const Form = ({ closeModal }) => {
                     value={selectedServiceId}
                     onChange={handleServiceChange}
                   >
-                    <option value="0" disabled>Select a Service</option>
+                    <option value="0" disabled>Wybierz usługę</option>
 
-                    {servicesForBarber.map(svc => (
-                      <option className="service-option" key={svc.id} value={svc.id}>
+                    {mergedServicesForBarber.map(svc => (
+                      <option key={svc.id} value={svc.id}>
                         {svc.name} • {svc.duration} min • {svc.price} zl
                       </option>
                     ))}
@@ -448,7 +459,7 @@ const Form = ({ closeModal }) => {
               </div>
 
               {hasServiceError && (
-                <p className="help is-danger">Please select a service</p>
+                <p className="help is-danger">Proszę wybrać usługę</p>
               )}
             </div>
 
@@ -478,7 +489,7 @@ const Form = ({ closeModal }) => {
 
         {selectedServiceId > 0 && (
           <div className="field">
-            <label className="label" htmlFor='date'>Wybierz datę</label>
+            <label className="label" htmlFor='date'>Data</label>
             <div className="control">
               <DatePicker
                 selected={selectedDate}
@@ -512,32 +523,40 @@ const Form = ({ closeModal }) => {
             </div>
 
             {hasDateError && (
-              <p className="help is-danger">Please select a date</p>
+              <p className="help is-danger">Proszę wybrać datę</p>
             )}
           </div>
         )}
 
         {selectedDate && (
           <div className="field">
-            <label className="label" htmlFor='time'>Wybierz czas</label>
+            <label className="label" htmlFor='time'>Czas</label>
             <div className="control">
               <div className="select is-fullwidth">
                 <select
                   value={selectedTime}
                   onChange={handleTimeChange}
-                  onClick={(e) => setSelectedTime(e.target.value)}
                   id='time'
+                  disabled={timeslots.length === 0}
                 >
-                  <option value="">Godzina</option>
-                  {timeslots.map((slot) => (
-                    <option key={slot} value={slot}>{slot}</option>
-                  ))}
+                  {timeslots.length === 0 ? (
+                    <option style={{ color: '#ff0000' }} disabled>
+                      Brak dostępnych terminów
+                    </option>
+                  ) : (
+                    <>
+                      <option value="">Godzina</option>
+                      {timeslots.map((slot) => (
+                        <option key={slot} value={slot}>{slot}</option>
+                      ))}
+                    </>
+                  )}
                 </select>
               </div>
             </div>
 
             {hasTimeError && (
-              <p className="help is-danger">Please select time</p>
+              <p className="help is-danger">Proszę wybrać czas</p>
             )}
           </div>
         )}
@@ -548,11 +567,11 @@ const Form = ({ closeModal }) => {
         </div>
 
         <div className="buttons">
-          <button type="button" className="button is-danger" onClick={closeModal}>
+          <button type="button" className="button form-cancel-button" onClick={closeModal}>
             Close
           </button>
 
-          <button type="submit" className="button is-link">
+          <button type="submit" className="button form-submit-button">
             Submit
           </button>
         </div>

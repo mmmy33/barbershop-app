@@ -5,7 +5,7 @@ export const HeroSection = () => {
   return (
     <section className="hero-section">
       <div className="hero-overlay">
-        <div className="hero-left-side">
+        <div className="hero-box">
           <h1 className="hero-title">
             Twój styl,<br /> nasza kawa.
           </h1>

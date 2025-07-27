@@ -9,13 +9,19 @@ import IconClose from '../../Icons/IconCloseBig.svg';
 
 export const HeaderNavigation = ({ navItems }) => {
   const navigate = useNavigate();
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // const [isAdmin, setIsAdmin] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
 
   const openMenu = () => setIsMenuOpen(true);
   const closeMenu = () => setIsMenuOpen(false);
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+    return () => document.body.classList.remove('no-scroll');
+  }, [isMenuOpen]);
 
   const handleScrollToSection = (href) => {
     const element = document.querySelector(href);
@@ -23,41 +29,6 @@ export const HeaderNavigation = ({ navItems }) => {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
-
-  // useEffect(() => {
-  //   const token = localStorage.getItem('jwt');
-  //   if (token) {
-  //     setIsLoggedIn(true);
-
-  //     fetch('http://127.0.0.1:8000/api/auth/me', {
-  //       headers: {
-  //         'Authorization': `Bearer ${token}`,
-  //       }
-  //     })
-  //       .then(response => response.json())
-  //       .then(data => {
-  //         if (data.role === 'admin') {
-  //           setIsAdmin(true);
-  //         }
-  //       })
-  //       .catch(error => console.error('Error fetching user data:', error));
-  //   } else {
-  //     setIsLoggedIn(false);
-  //   }
-  // }, []);
-
-  // const navItems = [
-  //   ...(isAdmin ? [{ id: 'admin', label: 'Admin', route: '/admin' }] : []),
-  //   { id: 'o-nas', label: 'O nas', href: '#o-nas' },
-  //   { id: 'nasze-prace', label: 'Nasze prace', href: '#nasze-prace' },
-  //   { id: 'jak-umowic', label: 'Jak umówić się?', href: '#kontakt' },
-  //   { id: 'nasze-uslugi', label: 'Nasze usługi', href: '#uslugi' },
-  //   { id: 'zespol', label: 'Zespół', href: '#zespol' },
-  //   { id: 'opinie', label: 'Opinie', href: '#opinie' },
-  //   { id: 'kontakty', label: 'Kontakty', href: '#kontakty' },
-  //   { id: 'profile', label: isLoggedIn ? 'Profile' : 'Log in', route: isLoggedIn ? '/profile' : '/login' },
-  // ];
-
 
  return (
     <>
@@ -77,9 +48,11 @@ export const HeaderNavigation = ({ navItems }) => {
               key={item.id}
               className="nav-button"
               onClick={() => {
-                if (item.route) {
+                if (item.action) {
+                  item.action();
+                } else if (item.route) {
                   navigate(item.route);
-                } else {
+                } else if (item.href) {
                   handleScrollToSection(item.href);
                 }
               }}
@@ -133,9 +106,13 @@ export const HeaderNavigation = ({ navItems }) => {
                   key={item.id}
                   className="burger-menu-nav-button"
                   onClick={() => {
-                    if (item.route) {
+                    if (item.action) {
+                      item.action();
+                      closeMenu();
+                    } else if (item.route) {
                       navigate(item.route);
-                    } else {
+                      closeMenu();
+                    } else if (item.href) {
                       handleScrollToSection(item.href);
                       closeMenu();
                     }

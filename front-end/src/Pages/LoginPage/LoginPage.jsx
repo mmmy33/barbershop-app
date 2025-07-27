@@ -41,7 +41,7 @@ export function LoginPage() {
       />
       <div className="login-container">
         <div>
-          <h1 className="title">Login</h1>
+          <h1 className="title login-title">Login</h1>
           <form onSubmit={handleSubmit} className="box login-form">
             {error && <p className="notification is-danger">{error}</p>}
             <div className="field">
@@ -62,12 +62,12 @@ export function LoginPage() {
             </div>
 
             <div className="field">
-              <label className="label">Password</label>
+              <label className="label">Hasło</label>
               <div className="control has-icons-left">
                 <input
                   className="input"
                   type="password"
-                  placeholder="Password"
+                  placeholder="Hasło"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
@@ -81,13 +81,13 @@ export function LoginPage() {
             <div className="field">
               <div className="control login-button-container">
                 <button className="button is-primary login-button" type="submit">
-                  Login
+                  Zaloguj się
                 </button>
               </div>
             </div>
           </form>
           <p className='login-subtitle'>
-            Don't have an account? <Link to="/register">Register here</Link>
+            Nie masz konta? <Link to="/register">Zarejestruj się tutaj</Link>
           </p>
         </div>
       </div>

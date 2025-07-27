@@ -28,7 +28,6 @@ export const ServicesSection = () => {
       <Swiper
         modules={[Pagination]}
         spaceBetween={24}
-        pagination={{ clickable: true }}
         loop={true}
         breakpoints={{
           1440: { slidesPerView: 4 },

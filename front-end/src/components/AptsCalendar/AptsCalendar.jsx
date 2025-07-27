@@ -5,13 +5,40 @@ import interactionPlugin from '@fullcalendar/interaction'
 import plLocale from '@fullcalendar/core/locales/pl'
 import './AptsCalendar.css'
 
-export function AptsCalendar({ barberId }) {
+export function AptsCalendar({ barberId, userRole }) {
   const [events, setEvents] = useState([])
+  const [draggedEventId, setDraggedEventId] = useState(null);
 
+  const [barbers, setBarbers] = useState([]);
+  const [selectedBarberId, setSelectedBarberId] = useState(barberId || '');
+
+  // Получаем список барберов для админа
   useEffect(() => {
-    if (!barberId) return
-    const token = localStorage.getItem('jwt')
-    fetch(`/api/appointments/barber/${barberId}`, {
+    if (userRole === 'admin') {
+      const token = localStorage.getItem('jwt');
+      fetch('/api/barbers/', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => setBarbers(Array.isArray(data) ? data : (data.barbers || [])))
+        .catch(() => setBarbers([]));
+    }
+  }, [userRole]);
+
+  // Получаем записи для выбранного барбера
+  useEffect(() => {
+    let url;
+    const token = localStorage.getItem('jwt');
+    if (userRole === 'admin') {
+      if (!selectedBarberId) return;
+      url = `/api/appointments/barber/${selectedBarberId}`;
+    } else if (userRole === 'barber') {
+      url = `/api/appointments/me/barber`;
+    } else {
+      return;
+    }
+
+    fetch(url, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => {
@@ -24,7 +51,6 @@ export function AptsCalendar({ barberId }) {
             const start = new Date(a.scheduled_time)
             if (isNaN(start)) return null
             const end = new Date(start.getTime() + (a.total_duration || 0) * 60000)
-
             return {
               id: a.id.toString(),
               title: a.name,
@@ -32,113 +58,238 @@ export function AptsCalendar({ barberId }) {
               end:   end,
               extendedProps: {
                 service: a.full_service_title,
-                phone:   a.phoneNumber,
+                phone:   a.phone_number,
+                price:   a.total_price
               }
             }
           })
           .filter(Boolean)
-
         setEvents(evs)
       })
       .catch(err => {
-        console.error('Не вдалося загрузити записи:', err)
+        console.error('Не вдалося завантажити записи:', err)
         setEvents([])
       })
-  }, [barberId])
+  }, [selectedBarberId, barberId, userRole]);
 
+
+  const handleEventDragStart = info => {
+    setDraggedEventId(info.event.id);
+  };
+
+  const handleEventDragStop = info => {
+    setDraggedEventId(null);
+  };
+
+  // Handle event drop (rescheduling)
+  const handleEventDrop = async info => {
+    const token = localStorage.getItem('jwt');
+    const appointmentId = info.event.id;
+    const scheduledTime = info.event.start.toISOString();
+
+    const payload = {
+      appointment_id: Number(appointmentId),
+      scheduled_time: scheduledTime
+    };
+
+    console.log('PATCH payload:', payload);
+
+    try {
+      const res = await fetch(`/api/appointments/${appointmentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      console.log('PATCH status:', res.status);
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error('PATCH error:', errText);
+        alert('Помилка зберігання. Відкат');
+        info.revert();
+      } else {
+        const data = await res.json();
+        console.log('PATCH success:', data);
+      }
+    } catch (err) {
+      console.error('PATCH exception:', err);
+      alert('Помилка зберігання. Відкат');
+      info.revert();
+    }
+  };
+
+  // Рендер карточки события с учетом роли
   const renderEventContent = info => {
-    const { service, phone } = info.event.extendedProps
+    const { service, phone, price } = info.event.extendedProps
+    const isDragging = draggedEventId === info.event.id;
 
     return (
-      <div className="fc-event-card">
-        <div className="fc-event-client">{info.event.title}</div>
-        <div className="fc-event-service">{service}</div>
-        <div className="fc-event-time">
-          {info.timeText}
+      <div className={`fc-event-card${isDragging ? ' fc-event-card--dragging' : ''}`}>
+        <div className="fc-event-card-upper">
+          <div className="fc-event-client">{info.event.title}</div>
+
+          {userRole === 'admin' && (
+            <div className="fc-event-phone">{phone}</div>
+          )}
         </div>
-        <div className="fc-event-phone">{phone}</div>
+        <div className="fc-event-service">{service}</div>
+
+        <div className="fc-event-details">
+          <div className="fc-event-time">{info.timeText}</div>
+          <div className="fc-event-price">{`Price: ${price} zł`}</div>
+        </div>
       </div>
     )
   }
-  
-  const handleEventDrop = async info => {
-    const token = localStorage.getItem('jwt')
-    const res = await fetch(`/api/appointments/${info.event.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ scheduled_time: info.event.start.toISOString() })
-    })
-    if (!res.ok) {
-      alert('Помилка зберігання. Відкат')
-      info.revert()
-    }
-  }
 
   return (
-    <FullCalendar
-      className="calendar"
-      plugins={[timeGridPlugin, interactionPlugin]}
-      initialView="timeGridWeek"
-      editable    = { true }
-      selectable  = { true }
-      eventDrop   = { handleEventDrop }
-      events      = { events }
-      eventContent= { renderEventContent }
-      headerToolbar={{
-        left:   'prev,next today',
-        center: 'title',
-        right:  'timeGridDay,timeGridWeek'
-      }}
-      height="auto"
+    <div>
+      {userRole === 'admin' && (
+        <div className="field select-barber-box">
+          <label className="label select-barber-label">SELECT BARBER</label>
+          <div className="control">
+            <div className="select is-fullwidth">
+              <select
+                value={selectedBarberId}
+                onChange={e => setSelectedBarberId(e.target.value)}
+              >
+                <option value="" disabled>Barber</option>
+                {barbers.map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
 
-      locales={[plLocale]}
-      locale="pl"
-      timeZone="UTC"
-      eventTimeFormat={{
-        hour:   '2-digit',
-        minute: '2-digit',
-        hour12: false
-      }}
-
-      slotDuration="00:15:00"
-      slotLabelInterval="00:15:00"
-      snapDuration="00:15:00"
-      slotMinTime="09:00:00"
-
-      viewDidMount={({ el }) => {
-        el.querySelectorAll('.fc-toolbar, .fc-header-toolbar').forEach(node => {
-          node.style.setProperty('background-color', '#fff', 'important');
-        });
-
-        el.querySelectorAll('.fc-col-header-cell').forEach(node => {
-          node.style.backgroundColor = '#fff';
-          node.style.borderColor     = '#ccc';
-          node.style.color     = '#ccc';
-        });
-
-        el.querySelectorAll('.fc-timegrid-all-day').forEach(node => {
-          node.style.backgroundColor = '#fff';
-          node.style.borderColor     = '#ccc';
-        });
-
-        el.querySelectorAll('.fc-timegrid-slot-label').forEach(node => {
-          node.style.backgroundColor = '#fff';
-          node.style.borderColor     = '#ccc';
-        });
-
-        el.querySelectorAll('.fc-scrollgrid-section, .fc-scrollgrid').forEach(node => {
-          node.style.backgroundColor = '#fff';
-        });
-
-        el.querySelectorAll('.fc-timegrid-slot-lane').forEach(node => {
-          node.style.backgroundColor = '#fff';
-          node.style.borderTop       = '1px solid #ccc';
-          node.style.borderRight     = '1px solid #ccc';
-        });
-      }}
-    />
+      <FullCalendar
+        className="calendar"
+        plugins={[timeGridPlugin, interactionPlugin]}
+        initialView="timeGridDay"
+        editable={true}
+        selectable={true}
+        eventDrop={handleEventDrop}
+        eventDragStart={handleEventDragStart}
+        eventDragStop={handleEventDragStop}
+        events={events}
+        eventContent={renderEventContent}
+        headerToolbar={{
+          left: 'prev,next today',
+          center: 'title',
+          right: 'timeGridDay,timeGridWeek'
+        }}
+        height="auto"
+        locales={[plLocale]}
+        locale="pl"
+        timeZone="UTC"
+        eventTimeFormat={{
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }}
+        slotDuration="00:15:00"
+        slotLabelInterval="00:15:00"
+        snapDuration="00:15:00"
+        slotMinTime="09:00:00"
+        viewDidMount={({ el }) => {
+          el.querySelectorAll('.fc-toolbar, .fc-header-toolbar').forEach(node => {
+            node.style.setProperty('background-color', '#fff', 'important');
+          });
+          el.querySelectorAll('.fc-col-header-cell').forEach(node => {
+            node.style.backgroundColor = '#fff';
+            node.style.borderColor     = '#ccc';
+            node.style.color     = '#ccc';
+          });
+          el.querySelectorAll('.fc-timegrid-all-day').forEach(node => {
+            node.style.backgroundColor = '#fff';
+            node.style.borderColor     = '#ccc';
+          });
+          el.querySelectorAll('.fc-timegrid-slot-label').forEach(node => {
+            node.style.backgroundColor = '#fff';
+            node.style.borderColor     = '#ccc';
+          });
+          el.querySelectorAll('.fc-scrollgrid-section, .fc-scrollgrid').forEach(node => {
+            node.style.backgroundColor = '#fff';
+          });
+          el.querySelectorAll('.fc-timegrid-slot-lane').forEach(node => {
+            node.style.backgroundColor = '#fff';
+            node.style.borderTop       = '1px solid #ccc';
+            node.style.borderRight     = '1px solid #ccc';
+          });
+        }}
+      />
+    </div>
   )
+
+  // return (
+  //   <FullCalendar
+  //     className="calendar"
+  //     plugins={[timeGridPlugin, interactionPlugin]}
+  //     initialView="timeGridDay"
+  //     editable    = { true }
+  //     selectable  = { true }
+  //     eventDrop   = { handleEventDrop }
+  //     eventDragStart={handleEventDragStart}
+  //     eventDragStop={handleEventDragStop}
+  //     events      = { events }
+  //     eventContent= { renderEventContent }
+  //     headerToolbar={{
+  //       left:   'prev,next today',
+  //       center: 'title',
+  //       right:  'timeGridDay,timeGridWeek'
+  //     }}
+  //     height="auto"
+
+  //     locales={[plLocale]}
+  //     locale="pl"
+  //     timeZone="UTC"
+  //     eventTimeFormat={{
+  //       hour:   '2-digit',
+  //       minute: '2-digit',
+  //       hour12: false
+  //     }}
+
+  //     slotDuration="00:15:00"
+  //     slotLabelInterval="00:15:00"
+  //     snapDuration="00:15:00"
+  //     slotMinTime="09:00:00"
+
+  //     viewDidMount={({ el }) => {
+  //       el.querySelectorAll('.fc-toolbar, .fc-header-toolbar').forEach(node => {
+  //         node.style.setProperty('background-color', '#fff', 'important');
+  //       });
+
+  //       el.querySelectorAll('.fc-col-header-cell').forEach(node => {
+  //         node.style.backgroundColor = '#fff';
+  //         node.style.borderColor     = '#ccc';
+  //         node.style.color     = '#ccc';
+  //       });
+
+  //       el.querySelectorAll('.fc-timegrid-all-day').forEach(node => {
+  //         node.style.backgroundColor = '#fff';
+  //         node.style.borderColor     = '#ccc';
+  //       });
+
+  //       el.querySelectorAll('.fc-timegrid-slot-label').forEach(node => {
+  //         node.style.backgroundColor = '#fff';
+  //         node.style.borderColor     = '#ccc';
+  //       });
+
+  //       el.querySelectorAll('.fc-scrollgrid-section, .fc-scrollgrid').forEach(node => {
+  //         node.style.backgroundColor = '#fff';
+  //       });
+
+  //       el.querySelectorAll('.fc-timegrid-slot-lane').forEach(node => {
+  //         node.style.backgroundColor = '#fff';
+  //         node.style.borderTop       = '1px solid #ccc';
+  //         node.style.borderRight     = '1px solid #ccc';
+  //       });
+  //     }}
+  //   />
+  // )
 }

@@ -7,6 +7,7 @@ import OurWorkImg3 from '../../Images/OurWorkImg-3.png';
 import OurWorkImg4 from '../../Images/OurWorkImg-4.png';
 import OurWorkImg5 from '../../Images/OurWorkImg-5.png';
 import OurWorkImg6 from '../../Images/OurWorkImg-6.png';
+import { Pagination } from 'swiper/modules';
 
 export const OurWorkSection = () => {
   const workImages = [
@@ -24,7 +25,6 @@ export const OurWorkSection = () => {
         type: 'loop',
         perPage: 1,
         gap: 16,
-        // pagination: true,
         arrows: false,
         breakpoints: {
           1024: { perPage: 2 },

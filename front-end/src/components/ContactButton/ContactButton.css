@@ -14,7 +14,6 @@
   line-height: 150%;
 
   padding: 16px 32px;
-  margin-top: 56px;
 }
 
 .contact-button:hover {
@@ -23,10 +22,6 @@
 
 .contact-button:active {
   background-color: #C00E11;
-}
-
-.contact-button:disabled {
-  background-color: #893133;
 }
 
 .modal-overlay {
@@ -93,6 +88,9 @@
 
 /* Mobile: ≤ 640px */
 @media (max-width: 640px) {
+  .contact-button{
+    width: 100%;
+  }
   .modal-content {
     padding: 40px 0;
   }

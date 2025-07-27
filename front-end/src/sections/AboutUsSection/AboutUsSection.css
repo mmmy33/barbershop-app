@@ -70,6 +70,7 @@
   font-size: var(--subtitle-font-size);
   font-weight: var(--subtitle-font-weight);
   line-height: 150%;
+  margin-bottom: 36px;
 }
 
 
@@ -107,6 +108,7 @@
   }
 
   .about-text {
+    margin-bottom: 19px;
     font-size: var(--subtitle-font-size-tablet);
   }
 

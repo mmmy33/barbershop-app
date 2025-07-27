@@ -1,0 +1,7 @@
+.no-scroll {
+  overflow: hidden !important;
+  overscroll-behavior: contain;
+  position: fixed;
+  width: 100vw;
+  -webkit-overflow-scrolling: auto !important;
+}

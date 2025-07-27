@@ -15,7 +15,7 @@
   background: rgba(9, 19, 30, 0.72) !important;
 }
 
-.title {
+.registration-title {
   text-align: center;
 }
 
@@ -28,24 +28,24 @@
   padding: 0;
 }
 
-.title {
-  color: var(--title-color);
-}
-
 .registration-button {
   background-color: #C90F12;
   color: #fff;
 }
 
+.login-link {
+  text-align: center;
+}
+
 @media (max-width: 1024px) and (min-width: 641px) {}
 @media (max-width: 640px) {
   .registration-container {
-    margin: 24px;
-    padding: 24px 20;
+    margin: 16px;
+    padding: 24px 20px;
   }
   
   .registration-form {
-    padding-top: 20px !important;
+    padding: 20px 20px 10px 20px;
   }
 
   .title {
@@ -58,7 +58,19 @@
     margin-top: 10px;
   }
 
-  .login-link {
+  .verify-form {
     text-align: center;
+    margin-top: 16px;
   }
+
+  .verify-label {
+    letter-spacing: 1px;
+    font-size: 20px;
+    padding-bottom: 14px;
+  }
+
+  .verify-input {
+    width: 215px;
+  }
+
 }

@@ -53,7 +53,7 @@
 
 .burger-menu-content {
   position: fixed;
-  background: rgba(2, 6, 10, 0.75);
+  background: rgb(2, 6, 10);
   width: 100%;
   display: flex;
   flex-direction: column;

@@ -4,11 +4,12 @@ export default function ConfirmationModal({ onClose, datetime }) {
   return (
     <div className="confirm-overlay">
       <div className="confirm-box">
-        <div className="confirm-icon"></div>
+        <div className="confirm-icon" aria-label="Success"></div>
         <h2 className="confirm-title">Zarezerwowano!</h2>
         <p className="confirm-text">
-          Świetny wybór. Twój termin w Barber Poznań №1 został potwierdzony. <br/>
-          Czekamy na Ciebie {datetime}
+          Świetny wybór.<br />
+          Twój termin w <span className="confirm-barber">Barber Poznań №1</span> został potwierdzony.<br />
+          <span className="confirm-datetime">{datetime}</span>
         </p>
         <button className="confirm-button" onClick={onClose}>
           Zrozumiało

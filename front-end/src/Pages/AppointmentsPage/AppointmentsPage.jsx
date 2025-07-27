@@ -6,55 +6,48 @@ import { fetchCurrentUser } from '../../api/auth';
 import './AppointmentsPage.css';
 
 export function AppointmentsPage() {
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
   const [barbers, setBarbers] = useState([]);
   const [selectedBarber, setSelectedBarber] = useState(0);
+  const [currentBarberId, setCurrentBarberId] = useState(null);
 
-  // User fetch to check if admin
+  // Получаем роль и id текущего пользователя
   useEffect(() => {
     fetchCurrentUser()
-      .then(data => setIsAdmin(data.role === 'admin'))
-      .catch(() => {})
+      .then(data => {
+        setUserRole(data.role);
+        if (data.role === 'barber') setCurrentBarberId(data.id);
+      })
+      .catch(() => setUserRole(null))
       .finally(() => setLoadingUser(false));
   }, []);
 
+  // Для админа получаем список барберов
   useEffect(() => {
-    fetch(`${API_BASE}/barbers/`, { headers: getAuthHeaders() })
-      .then(res => res.json())
-      .then(json => {
-        const list = Array.isArray(json) ? json : json.barbers || [];
-        setBarbers(list);
-        if (list.length > 0) setSelectedBarber(list[0].id);
-      })
-      .catch(console.error);
-  }, []);
+    if (userRole === 'admin') {
+      fetch(`${API_BASE}/barbers/`, { headers: getAuthHeaders() })
+        .then(res => res.json())
+        .then(json => {
+          const list = Array.isArray(json) ? json : json.barbers || [];
+          setBarbers(list);
+          if (list.length > 0) setSelectedBarber(list[0].id);
+        })
+        .catch(console.error);
+    }
+  }, [userRole]);
 
   if (loadingUser) return <div className="container"><p>Loading...</p></div>;
-  if (!isAdmin)    return <div className="container"><p>Unauthorized</p></div>;
+  if (userRole !== 'admin' && userRole !== 'barber') return <div className="container"><p>Unauthorized</p></div>;
 
   return (
     <div className="appointments-container">
-      <div className="select-barber-box">
-        <div className="control">
-          <div className="select">
-            <select
-              value={selectedBarber}
-              onChange={e => setSelectedBarber(+e.target.value)}
-            >
-              {barbers.map(b => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {selectedBarber > 0 && (
-        <AptsCalendar barberId={selectedBarber} />
+      {userRole === 'admin' && selectedBarber > 0 && (
+        <AptsCalendar barberId={selectedBarber} userRole="admin" />
+      )}
+      {userRole === 'barber' && currentBarberId && (
+        <AptsCalendar barberId={currentBarberId} userRole="barber" />
       )}
     </div>
   );

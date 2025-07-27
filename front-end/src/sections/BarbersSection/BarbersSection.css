@@ -1,16 +1,16 @@
 @import '../../styles/variables.css';
 
 .barbers-section {
-  margin-top: 150px;
+  margin-top: 120px;
 }
 
 .barbers-title {
+  text-align: center;
   color: var(--title-color);
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-primary);
   font-size: 68px;
   font-weight: 700;
   margin-bottom: 48px;
-  text-align: center;
 }
 
 .barbers-grid {
@@ -39,17 +39,25 @@
   transform: scale(1.05);
 }
 
+.barbers-swiper {
+  display: none;
+}
+
 .barbers-cta {
-  text-align: center;
   margin: 150px 0 164px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .barbers-cta-title {
-  font-family: var(--font-privary);
+  text-align: center;
+  font-family: var(--font-primary);
   font-size: 40px;
   font-weight: 700;
-  margin-bottom: 24px;
-  color: #FFFFFF;
+  margin-bottom: 36px;
+  color: #FFF;
 }
 
 @media (max-width: 768px) {
@@ -64,13 +72,17 @@
   .barbers-cta {
     margin: 60px 0 60px 0;
   }
+
+  .barbers-cta-title {
+    margin-bottom: 24px;
+  }
 }
 
 
 /* Tablet: ≤ 1024px , > 640px */
 @media (max-width: 1024px) and (min-width: 641px) {
   .barbers-section {
-    margin-top: 90px;
+    margin-top: 60px;
   }
 
   .barbers-title {
@@ -86,11 +98,11 @@
 /* Mobile: ≤ 640px */
 @media (max-width: 640px) {
   .barbers-section {
-    margin-top: 40px;
+    margin-top: 20px;
   }
 
   .barbers-title {
-    font-size: var( --title-font-size-mobile);
+    font-size: var(--title-font-size-mobile);
     margin-bottom: 24px;
   }
 
@@ -98,7 +110,19 @@
     gap: 10px;
   }
 
+  .barbers-grid {
+    display: none;
+  }
+  .barbers-swiper {
+    display: block;
+    margin-bottom: 24px;
+  }
+
+  .barbers-cta-button-box {
+    width: 100%;
+  }
+
   .barbers-cta {
-    margin: 30px 0 30px 0;
+    margin: 40px 0 30px 0;
   }
 }

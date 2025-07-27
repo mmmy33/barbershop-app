@@ -69,7 +69,6 @@
   .services-section {
     margin-top: 50px;
     max-width: 100%;
-    /* padding: 0 20px;  */
   }
 
   .service-card {
@@ -77,6 +76,7 @@
   }
 
   .services-title {
+    text-align: center;
     font-size: var(--title-font-size-mobile);
     margin-bottom: 14px;
   }

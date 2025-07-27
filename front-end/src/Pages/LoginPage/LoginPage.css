@@ -23,8 +23,8 @@
   gap: 12px;
 }
 
-.title {
-  color: var(--title-color);
+.login-title {
+  text-align: center;
 }
 
 .login-button {
@@ -37,13 +37,14 @@
 }
 
 .login-subtitle {
-  font-weight: var(--subtitle-font-weight);
+  font-weight: 16px;
+  text-align: center;
 }
 
 @media (max-width: 1024px) and (min-width: 641px) {}
 @media (max-width: 640px) {
   .login-container {
-    margin: 24px;
+    margin: 24px 16px 0 16px;
     padding: 24px 20px;
   }
 

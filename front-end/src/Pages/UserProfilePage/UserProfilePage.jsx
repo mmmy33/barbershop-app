@@ -1,21 +1,24 @@
-import './UserProfile.css';
+import './UserProfilePage.css';
 import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HeaderNavigation } from '../../sections/HeaderNavigation/HeaderNavigation';
 import { FooterSection } from '../../sections/FooterSection/FooterSection';
-import {getAuthHeaders} from '../../api/config';
+import { getAuthHeaders } from '../../api/config';
 import { API_BASE } from '../../api/config';
 
-export const UserProfile = () => {
+export const UserProfilePage = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [appointments, setAppointments] = useState({ upcoming: [], completed: [] });
   const [error, setError] = useState(null);
 
   const token = localStorage.getItem('jwt');
 
+  // auth check
   useEffect(() => {
     if (!token) {
-      setError('Please log in first');
-      return;
+      navigate('/login');
+      return
     }
 
     (async () => {
@@ -85,23 +88,48 @@ export const UserProfile = () => {
     }
   }
 
+  // delete completed appointment
+  async function deleteCompletedAppointment(id) {
+    try {
+      const res = await fetch(
+        `${API_BASE}/appointments/${id}`,
+        { method: 'DELETE', headers: getAuthHeaders() }
+      );
+      if (!res.ok) throw new Error(`Failed to delete appointment ${id}`);
+      setAppointments(prev => ({
+        ...prev,
+        completed: prev.completed.filter(a => a.id !== id),
+      }));
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('jwt');
+    navigate('/login');
+  };
+
   const navItems = useMemo(() => {
       const items = [
         { id: 'main-page', label: 'Main', route: '/' },
+        { id: 'editProfile-page', label: 'Edit Profile', route: '/edit' },
       ];
-      if (user?.role === 'admin') {
-        items.unshift({ id: 'admin', label: 'Admin', route: '/admin' });
+      if (user?.role === 'admin' || user?.role === 'barber') {
         items.unshift({ id: 'appointments', label: 'Apps', route: '/appointments' });
       }
+      if (user?.role === 'admin') {
+        items.unshift({ id: 'admin', label: 'Admin', route: '/admin' });
+      }
+      items.push({ id: 'logout', label: 'Logout', action: handleLogout });
       return items;
-    }, [user]);
+  }, [user]);
 
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
 
   return (
     <div className="user-profile-container">
       <HeaderNavigation navItems={navItems} />
-
       <div className="user-profile-box">
         {appointments.upcoming.length > 0 ? (
           <div className="visit-card scheduled">
@@ -136,7 +164,7 @@ export const UserProfile = () => {
             </div>
             <div className="visit-actions">
               <button
-                className="cancel-button" onClick={() =>
+                className="cancel-appointment-button" onClick={() =>
                 cancelAppointment(appointments.upcoming[0].id,appointments.upcoming[0].addonIds)}
               >
                 Anulować
@@ -150,40 +178,40 @@ export const UserProfile = () => {
         )}
 
         {appointments.completed.length > 0 ? (
-          <div className="visit-card completed">
-            <div className="visit-header">
-              <span>Zakończony</span>
-              <i className="fas fa-check-circle"></i>
+          appointments.completed.slice(0, 5).map((visit, idx) => (
+            <div className="visit-card completed" key={visit.id || idx}>
+              <div className="visit-header">
+                <span>Zakończony</span>
+                <i className="fas fa-check-circle"></i>
+              </div>
+              <div className="visit-body">
+                <div className="visit-row">
+                  <span className="label">Twój barber:</span>
+                  <span className="value">{visit.barber_name}</span>
+                </div>
+                <div className="visit-row">
+                  <span className="label">Service:</span>
+                  <span className="value">{visit.full_service_title}</span>
+                </div>
+                <div className="visit-row">
+                  <span className="label">Kiedy:</span>
+                  <span className="value">{visit.scheduled_date}</span>
+                </div>
+                <div className="visit-row">
+                  <span className="label">O której godzinie:</span>
+                  <span className="value">{visit.scheduled_time}</span>
+                </div>
+              </div>
+              <div className="visit-actions">
+                <button
+                  className="delete-appointment-button"
+                  onClick={() => deleteCompletedAppointment(visit.id)}
+                >
+                  Usuń zapis
+                </button>
+              </div>
             </div>
-            <div className="visit-body">
-              {(() => {
-                const last = appointments.completed[0];
-                return (
-                  <>
-                    <div className="visit-row">
-                      <span className="label">Twój barber:</span>
-                      <span className="value">{last.barber_name}</span>
-                    </div>
-                    <div className="visit-row">
-                      <span className="label">Service:</span>
-                      <span className="value">{last.full_service_title}</span>
-                    </div>
-                    <div className="visit-row">
-                      <span className="label">Kiedy:</span>
-                      <span className="value">{last.scheduled_date}</span>
-                    </div>
-                    <div className="visit-row">
-                      <span className="label">O której godzinie:</span>
-                      <span className="value">{last.scheduled_time}</span>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-            {/* <div className="visit-actions">
-              <button className="button is-outlined">Usuń zapis</button>
-            </div> */}
-          </div>
+          ))
         ) : (
           <div className="notification is-info">
             Brak zakończonych wizyt

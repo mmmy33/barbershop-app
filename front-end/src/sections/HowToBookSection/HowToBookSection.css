@@ -65,6 +65,7 @@
   font-size: var(--subtitle-font-size);
   font-weight: var(--subtitle-font-weight);
   line-height: 150%;
+  margin-bottom: 48px;
 }
 
 /* Tablet: ≤ 1024px , > 640px */
@@ -137,6 +138,7 @@
     align-items: center;
     justify-content: center;
     padding: 0 16px;
+    margin-top: 15px;
   }
 
   .step {
@@ -172,5 +174,6 @@
 
   .how-to-book-text {
     font-size: var(--subtitle-font-size-mobile);
+    margin-bottom: 24px;
   }
 }

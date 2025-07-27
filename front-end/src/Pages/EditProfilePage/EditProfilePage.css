@@ -1,0 +1,120 @@
+@import '../../styles/variables.css';
+
+.edit-profile-page {
+  background: #02060A;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #fff;
+  padding-top: 40px;
+  font-family: var(--font-secondary);
+}
+
+.edit-profile-form {
+  max-width: 420px;
+  margin: 0 auto;
+  background: none;
+  padding: 0;
+}
+
+.edit-profile-title {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: var(--font-primary);
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.edit-profile-field {
+  margin-bottom: 20px;
+}
+
+.edit-profile-label {
+  color: #E9ECF1;
+  margin-bottom: 8px;
+}
+
+.edit-profile-input[disabled]{
+  background-color: #C90F12;
+  color: #fff;
+}
+
+.edit-profile-input {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #26303E;
+  border-radius: 4px;
+  height: 44px;
+  min-width: 300px;
+  font-size: 16px;
+}
+
+.edit-profile-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.edit-profile-save {
+  background: #C90F12;
+  border: 1px solid #C90F12;
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 8px 80px;
+  border-radius: 4px;
+}
+
+.edit-profile-save:hover {
+  background: transparent;
+  color: #C90F12;
+}
+
+.edit-profile-cancel {
+  background: none;
+  color: #fff;
+  border: 1px solid #fff;
+  font-weight: 400;
+  font-size: 16px;
+  padding: 8px 30px;
+  border-radius: 4px;
+}
+
+.edit-profile-cancel:hover {
+  border-color:#C90F12;
+  color: #C90F12;
+}
+
+.edit-profile-msg {
+  margin-top: 16px;
+}
+.edit-profile-msg.success {
+  color: green;
+}
+.edit-profile-msg.error {
+  color: red;
+}
+
+@media (max-width: 768px) {
+  .edit-profile-form {
+    padding: 0 20px;
+  }
+  .edit-profile-title {
+    font-size: 22px;
+    margin-bottom: 24px;
+  }
+  .edit-profile-actions {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .edit-profile-save,
+  .edit-profile-cancel {
+    width: 100%;
+    padding: 10px 0;
+    font-size: 15px;
+  }
+  .edit-profile-input {
+    font-size: 15px;
+    height: 40px;
+  }
+}

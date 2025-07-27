@@ -5,15 +5,7 @@
   box-sizing: border-box;
 }
 
-html {
-  scrollbar-width: none;
-}
-
-::-webkit-scrollbar {
-}
-
 html, body {
-  height: 100%;
   font-family: sans-serif;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -50,6 +42,26 @@ table {
 }
 /*#endregion css reset*/
 
+body, html {
+  scrollbar-width: thin;
+  scrollbar-color: #2a5daf #181A1B;
+}
+
+/* (Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 10px;
+  background: #181A1B;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a5daf;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3273dc;
+}
+
 .main-container {
   margin: 0 auto;
   padding: 0 48px;
@@ -66,7 +78,7 @@ table {
 @media (max-width: 640px) {
   .main-container {
     margin: 0 auto;
-    /* max-width: 100%; */
+    max-width: 100%;
     padding: 0 20px;
   }
 }
