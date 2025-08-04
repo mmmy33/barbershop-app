@@ -12,7 +12,10 @@ export function AptsCalendar({ barberId, userRole }) {
   const [barbers, setBarbers] = useState([]);
   const [selectedBarberId, setSelectedBarberId] = useState(barberId || '');
 
-  // Получаем список барберов для админа
+  const [inputPhoneNumber, setInputPhoneNumber] = useState('+48');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // Get full list of barbers for admin
   useEffect(() => {
     if (userRole === 'admin') {
       const token = localStorage.getItem('jwt');
@@ -25,7 +28,7 @@ export function AptsCalendar({ barberId, userRole }) {
     }
   }, [userRole]);
 
-  // Получаем записи для выбранного барбера
+  // Get appointments for selected barber
   useEffect(() => {
     let url;
     const token = localStorage.getItem('jwt');
@@ -77,7 +80,7 @@ export function AptsCalendar({ barberId, userRole }) {
     setDraggedEventId(info.event.id);
   };
 
-  const handleEventDragStop = info => {
+  const handleEventDragStop = () => {
     setDraggedEventId(null);
   };
 
@@ -122,7 +125,7 @@ export function AptsCalendar({ barberId, userRole }) {
     }
   };
 
-  // Рендер карточки события с учетом роли
+  // Render event card content considering user role
   const renderEventContent = info => {
     const { service, phone, price } = info.event.extendedProps
     const isDragging = draggedEventId === info.event.id;
@@ -145,6 +148,50 @@ export function AptsCalendar({ barberId, userRole }) {
       </div>
     )
   }
+
+const handleDeleteByPhone = async () => {
+  if (!inputPhoneNumber) {
+    alert("Wpisz numer telefonu klienta!");
+    return;
+  }
+  setDeleteLoading(true);
+  try {
+    const token = localStorage.getItem('jwt');
+    // Get appointments for the selected barber
+    const res = await fetch(`/api/appointments/barber/${selectedBarberId || barberId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const appointments = await res.json();
+
+    // Find upcoming appointments for the given phone number
+    const now = new Date();
+    const upcoming = appointments
+      .filter(a => a.phone_number === inputPhoneNumber && new Date(a.scheduled_time) > now);
+
+    if (upcoming.length === 0) {
+      alert("No upcoming appointment found with this phone number.");
+      setDeleteLoading(false);
+      return;
+    }
+
+    // Delete only the nearest upcoming appointment
+    const toDelete = upcoming[0];
+    const delRes = await fetch(`/api/appointments/${toDelete.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (delRes.ok) {
+      alert("Appointment deleted successfully !");
+      setEvents(events => events.filter(ev => ev.id !== toDelete.id.toString()));
+    } else {
+      alert("Error deleting appointment.");
+    }
+  } catch (err) {
+    alert("Connection error.");
+  }
+  setDeleteLoading(false);
+};
 
   return (
     <div>
@@ -196,6 +243,7 @@ export function AptsCalendar({ barberId, userRole }) {
         slotLabelInterval="00:15:00"
         snapDuration="00:15:00"
         slotMinTime="09:00:00"
+        slotMaxTime="21:00:00"
         viewDidMount={({ el }) => {
           el.querySelectorAll('.fc-toolbar, .fc-header-toolbar').forEach(node => {
             node.style.setProperty('background-color', '#fff', 'important');
@@ -223,73 +271,38 @@ export function AptsCalendar({ barberId, userRole }) {
           });
         }}
       />
+
+      <div className="delete-by-phone-wrapper">
+        <div className="delete-by-phone-box">
+          <label className="delete-by-phone-label" htmlFor="delete-phone">
+            Delete appointment by phone number:
+          </label>
+          <div className="delete-by-phone-row">
+            <input
+              id="delete-phone"
+              className="delete-by-phone-input"
+              type="tel"
+              placeholder="Client phone number"
+              value={inputPhoneNumber}
+              onChange={e => setInputPhoneNumber(e.target.value)}
+              maxLength={13}
+              pattern="^\+?\d{9,13}$"
+              autoComplete="off"
+            />
+            <button
+              className="delete-by-phone-btn"
+              onClick={handleDeleteByPhone}
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? "Deleting..." : "Delete"}
+            </button>
+          </div>
+          <p className="delete-by-phone-hint">
+            Enter number (e.g. +48500111222). The nearest future appointment will be deleted.
+          </p>
+        </div>
+      </div>
+
     </div>
-  )
-
-  // return (
-  //   <FullCalendar
-  //     className="calendar"
-  //     plugins={[timeGridPlugin, interactionPlugin]}
-  //     initialView="timeGridDay"
-  //     editable    = { true }
-  //     selectable  = { true }
-  //     eventDrop   = { handleEventDrop }
-  //     eventDragStart={handleEventDragStart}
-  //     eventDragStop={handleEventDragStop}
-  //     events      = { events }
-  //     eventContent= { renderEventContent }
-  //     headerToolbar={{
-  //       left:   'prev,next today',
-  //       center: 'title',
-  //       right:  'timeGridDay,timeGridWeek'
-  //     }}
-  //     height="auto"
-
-  //     locales={[plLocale]}
-  //     locale="pl"
-  //     timeZone="UTC"
-  //     eventTimeFormat={{
-  //       hour:   '2-digit',
-  //       minute: '2-digit',
-  //       hour12: false
-  //     }}
-
-  //     slotDuration="00:15:00"
-  //     slotLabelInterval="00:15:00"
-  //     snapDuration="00:15:00"
-  //     slotMinTime="09:00:00"
-
-  //     viewDidMount={({ el }) => {
-  //       el.querySelectorAll('.fc-toolbar, .fc-header-toolbar').forEach(node => {
-  //         node.style.setProperty('background-color', '#fff', 'important');
-  //       });
-
-  //       el.querySelectorAll('.fc-col-header-cell').forEach(node => {
-  //         node.style.backgroundColor = '#fff';
-  //         node.style.borderColor     = '#ccc';
-  //         node.style.color     = '#ccc';
-  //       });
-
-  //       el.querySelectorAll('.fc-timegrid-all-day').forEach(node => {
-  //         node.style.backgroundColor = '#fff';
-  //         node.style.borderColor     = '#ccc';
-  //       });
-
-  //       el.querySelectorAll('.fc-timegrid-slot-label').forEach(node => {
-  //         node.style.backgroundColor = '#fff';
-  //         node.style.borderColor     = '#ccc';
-  //       });
-
-  //       el.querySelectorAll('.fc-scrollgrid-section, .fc-scrollgrid').forEach(node => {
-  //         node.style.backgroundColor = '#fff';
-  //       });
-
-  //       el.querySelectorAll('.fc-timegrid-slot-lane').forEach(node => {
-  //         node.style.backgroundColor = '#fff';
-  //         node.style.borderTop       = '1px solid #ccc';
-  //         node.style.borderRight     = '1px solid #ccc';
-  //       });
-  //     }}
-  //   />
-  // )
+    )
 }

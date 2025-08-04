@@ -14,8 +14,8 @@ import { AdminPage } from './Pages/AdminPage/AdminPage';
 import { UserProfilePage } from './Pages/UserProfilePage/UserProfilePage';
 import { AppointmentsPage } from './Pages/AppointmentsPage/AppointmentsPage';
 import { EditProfilePage } from './Pages/EditProfilePage/EditProfilePage';
-
-
+import { ResetPasswordRequestPage } from './Pages/ResetPasswordRequestPage/ResetPasswordRequestPage';
+import { ResetPasswordConfirmPage } from './Pages/ResetPasswordConfirmPage/ResetPasswordConfirmPage';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -37,8 +37,10 @@ function App() {
       <Route path="/register" element={<RegistrationPage />} />
       <Route path="/profile" element={<UserProfilePage />} />
       <Route path="/admin" element={<AdminPage />} />
-      <Route path="/appointments" element={<AppointmentsPage />} /> {/*barberId={1} */}
+      <Route path="/appointments" element={<AppointmentsPage />} />
       <Route path="/edit" element={<EditProfilePage user={user} setUser={setUser} />} />
+      <Route path="/reset-request" element={<ResetPasswordRequestPage />} />
+      <Route path="/reset-confirm" element={<ResetPasswordConfirmPage />} />
     </Routes>
   );
 }

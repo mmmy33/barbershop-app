@@ -4,15 +4,12 @@
   display: inline-block;
   background: #C90F12;
   color: #E9ECF1;
-
   width: 300px;
-
   text-align: center;
   font-family: var(--font-secondary);
   font-size: 16px;
   font-weight: 600;
   line-height: 150%;
-
   padding: 16px 32px;
 }
 
@@ -24,7 +21,7 @@
   background-color: #C00E11;
 }
 
-.modal-overlay {
+.contact-button-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -35,7 +32,7 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.18s ease-out;
 }
 
 @keyframes fadeIn {
@@ -44,7 +41,7 @@
   100% { opacity: 1; }
 }
 
-.modal-content {
+.contact-button-content {
   padding: 30px 40px;
   border-radius: 12px;
   position: relative;
@@ -52,17 +49,18 @@
   max-height: 100vh;
   overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  animation: slideIn 0.2s ease-out;
+  animation: scaleIn 0.28s cubic-bezier(.32,1.56,.64,1) both;
   scrollbar-width: none;
 }
 
-.modal-content::-webkit-scrollbar {
+.contact-button-content::-webkit-scrollbar {
   display: none;
 }
 
-@keyframes slideIn {
-  0% { transform: translateY(-20px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+@keyframes scaleIn {
+  0%   { opacity: 0; transform: scale(0.85);}
+  60%  { opacity: 1; transform: scale(1.04);}
+  100% { opacity: 1; transform: scale(1);}
 }
 
 .close-modal-button {
@@ -88,10 +86,12 @@
 
 /* Mobile: ≤ 640px */
 @media (max-width: 640px) {
-  .contact-button{
+  .contact-button {
     width: 100%;
   }
-  .modal-content {
+
+  .contact-button-content {
+    width: 100%;
     padding: 40px 0;
   }
 }

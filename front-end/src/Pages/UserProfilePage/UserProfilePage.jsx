@@ -6,15 +6,49 @@ import { FooterSection } from '../../sections/FooterSection/FooterSection';
 import { getAuthHeaders } from '../../api/config';
 import { API_BASE } from '../../api/config';
 
+import { DeleteWarningModal, DeleteSuccessModal, CancelAppointmentModal } from './ConfirmationModals/ConfirmationModals';
+
 export const UserProfilePage = () => {
   const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
   const [appointments, setAppointments] = useState({ upcoming: [], completed: [] });
   const [error, setError] = useState(null);
 
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
   const token = localStorage.getItem('jwt');
 
-  // auth check
+  // For completed appointments:
+  function handleDeleteCompletedClick(visitId) {
+    setDeleteTarget(visitId);
+    setShowDeleteConfirm(true);
+  }
+
+  async function handleConfirmDeleteCompleted() {
+    setShowDeleteConfirm(false);
+    setShowSuccessModal(true);
+    try {
+      const res = await fetch(
+        `${API_BASE}/appointments/${deleteTarget}`,
+        { method: 'DELETE', headers: getAuthHeaders() }
+      );
+      if (!res.ok) throw new Error(`Failed to delete appointment ${deleteTarget}`);
+      setAppointments(prev => ({
+        ...prev,
+        completed: prev.completed.filter(a => a.id !== deleteTarget),
+      }));
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setDeleteTarget(null);
+    }
+  }
+
+  // Auth check
   useEffect(() => {
     if (!token) {
       navigate('/login');
@@ -88,22 +122,12 @@ export const UserProfilePage = () => {
     }
   }
 
-  // delete completed appointment
-  async function deleteCompletedAppointment(id) {
-    try {
-      const res = await fetch(
-        `${API_BASE}/appointments/${id}`,
-        { method: 'DELETE', headers: getAuthHeaders() }
-      );
-      if (!res.ok) throw new Error(`Failed to delete appointment ${id}`);
-      setAppointments(prev => ({
-        ...prev,
-        completed: prev.completed.filter(a => a.id !== id),
-      }));
-    } catch (err) {
-      alert(err.message);
-    }
-  }
+  const handleCancelUpcoming = async () => {
+    const next = appointments.upcoming[0];
+    if (!next) return;
+    await cancelAppointment(next.id, next.addonIds);
+    setShowCancelModal(true);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('jwt');
@@ -125,12 +149,30 @@ export const UserProfilePage = () => {
       return items;
   }, [user]);
 
-  if (error) return <p style={{ color: 'red' }}>{error}</p>;
+  if (error) {
+    return (
+      <p style={{ color: 'red' }}>{error}</p>
+    );
+  }
+
+  function getGreeting(user) {
+    const hour = new Date().getHours();
+    let base = 'Hello';
+    if (hour < 12) base = 'Good morning';
+    else if (hour < 18) base = 'Good afternoon';
+    else base = 'Good evening';
+
+    const name = user?.name || '';
+    return `${base}${name ? ', ' + name : ''}!`;
+  }
 
   return (
     <div className="user-profile-container">
       <HeaderNavigation navItems={navItems} />
       <div className="user-profile-box">
+        <div className="user-greeting">
+          {getGreeting(user)}
+        </div>
         {appointments.upcoming.length > 0 ? (
           <div className="visit-card scheduled">
             <div className="visit-header">
@@ -164,8 +206,8 @@ export const UserProfilePage = () => {
             </div>
             <div className="visit-actions">
               <button
-                className="cancel-appointment-button" onClick={() =>
-                cancelAppointment(appointments.upcoming[0].id,appointments.upcoming[0].addonIds)}
+                className="cancel-appointment-button" 
+                onClick={handleCancelUpcoming}
               >
                 Anulować
               </button>
@@ -205,7 +247,7 @@ export const UserProfilePage = () => {
               <div className="visit-actions">
                 <button
                   className="delete-appointment-button"
-                  onClick={() => deleteCompletedAppointment(visit.id)}
+                  onClick={() => handleDeleteCompletedClick(visit.id)}
                 >
                   Usuń zapis
                 </button>
@@ -219,6 +261,23 @@ export const UserProfilePage = () => {
         )}
       </div>
       <FooterSection />
+
+      {showCancelModal && (
+        <CancelAppointmentModal onClose={() => setShowCancelModal(false)} />
+      )}
+
+      {showDeleteConfirm && (
+        <DeleteWarningModal
+          onConfirm={handleConfirmDeleteCompleted}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
+
+      {showSuccessModal && (
+        <DeleteSuccessModal
+          onClose={() => setShowSuccessModal(false)}
+        />
+      )}
     </div>
   );
 };

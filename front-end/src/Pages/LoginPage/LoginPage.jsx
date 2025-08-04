@@ -45,10 +45,11 @@ export function LoginPage() {
           <form onSubmit={handleSubmit} className="box login-form">
             {error && <p className="notification is-danger">{error}</p>}
             <div className="field">
-              <label className="label">Email</label>
+              <label className="label" htmlFor="email">Email</label>
               <div className="control has-icons-left">
                 <input
                   className="input"
+                  id="email"
                   type="email"
                   placeholder="Email"
                   value={email}
@@ -62,11 +63,12 @@ export function LoginPage() {
             </div>
 
             <div className="field">
-              <label className="label">Hasło</label>
+              <label className="label" htmlFor="password">Hasło</label>
               <div className="control has-icons-left">
                 <input
                   className="input"
                   type="password"
+                  id="password"
                   placeholder="Hasło"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
@@ -87,11 +89,15 @@ export function LoginPage() {
             </div>
           </form>
           <p className='login-subtitle'>
-            Nie masz konta? <Link to="/register">Zarejestruj się tutaj</Link>
+            Nie masz konta? <Link className='login-link' to="/register">Zarejestruj się tutaj</Link>
+          </p>
+          <p className='reset-password-subtitle'>
+            <Link className='reset-password-link' to="/reset-request">
+              Zapomniałeś hasła?
+            </Link>
           </p>
         </div>
       </div>
-
     </section>
   );
 }

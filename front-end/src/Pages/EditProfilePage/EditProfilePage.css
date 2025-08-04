@@ -36,8 +36,8 @@
 }
 
 .edit-profile-input[disabled]{
-  background-color: #C90F12;
-  color: #fff;
+  color: #fff !important;
+  background-color: #4d5e78;
 }
 
 .edit-profile-input {

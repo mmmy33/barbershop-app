@@ -13,8 +13,15 @@
   flex-direction: column;
   justify-content: flex-end;
   align-items: center;
-  padding: 40px;
+  padding: 30px 40px 40px 40px;
   gap: 32px;
+}
+
+.user-greeting {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
 }
 
 .visit-card {
@@ -94,11 +101,54 @@
   width: 100%;
 }
 
-@media (max-width: 1024px) and (min-width: 641px) {}
-@media (max-width: 640px) {
+@media (max-width: 1024px) and (min-width: 641px) {
+  .user-greeting {
+    font-size: 24px;
+  }
+
   .visit-card {
     width: 100%;
-    padding: 16px;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 18px 10px 20px 10px;
+  }
+
+  .visit-card .visit-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 24px;
+    justify-items: flex-start;
+    align-items: center;
+    padding: 0 10px;
+  }
+
+  .visit-card .visit-row {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 8px;
+    font-size: 15px;
+    margin-bottom: 0;
+  }
+
+  .visit-row .label {
+    margin-right: 0;
+    margin-bottom: 2px;
+    font-size: 15px;
+  }
+
+  .visit-card .value {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 640px) {
+  .user-greeting {
+    font-size: 22px;
+  }
+  
+  .visit-card {
+    width: 100%;
+    padding: 18px 22px;
   }
 
   .visit-card .visit-body {

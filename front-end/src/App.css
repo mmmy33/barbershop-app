@@ -5,3 +5,7 @@
   width: 100vw;
   -webkit-overflow-scrolling: auto !important;
 }
+
+.no-scroll-mobile {
+  touch-action: none !important;
+}

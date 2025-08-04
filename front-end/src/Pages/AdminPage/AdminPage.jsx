@@ -2,12 +2,11 @@ import './AdminPage.css';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import 'react-datepicker/dist/react-datepicker.css';
-// import DatePicker from 'react-datepicker';
-// import { pl } from 'date-fns/locale';
 import { API_BASE, getAuthHeaders } from '../../api/config';
 import { fetchCurrentUser } from '../../api/auth';
 
 import BarberSchedule from './Components/BarbersSchedule/BarbersSchedule';
+import UnavailableTime from './Components/UnavailableTime/UnavailableTime';
 import CreateAddon from './Components/Addons/CreateAddons';
 import CreateService from './Components/Services/CreateService';
 import BarberAdd from './Components/BarberAdd/BarberAdd';
@@ -80,6 +79,8 @@ export const AdminPage = () => {
         {error && <div className="notification is-danger">{error}</div>}
 
         <BarberSchedule barbers={barbers} daysOfWeek={daysOfWeek} />
+
+        <UnavailableTime barbers={barbers} />
 
         <CreateService barbers={barbers} />
 

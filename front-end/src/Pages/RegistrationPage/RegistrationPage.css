@@ -17,6 +17,7 @@
 
 .registration-title {
   text-align: center;
+  color: #fff;
 }
 
 .registration-form {
@@ -33,7 +34,7 @@
   color: #fff;
 }
 
-.login-link {
+.subtitle-login-link {
   text-align: center;
 }
 

@@ -16,7 +16,7 @@ export const HowToBookSection = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveStep((prevStep) => (prevStep + 1) % steps.length);
-    }, 1500);
+    }, 1200);
 
     return () => clearInterval(interval);
   }, [steps.length]);

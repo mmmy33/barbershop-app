@@ -106,6 +106,7 @@ export default function BarberSchedule({ barbers, daysOfWeek }) {
             </button>
           </div>
         </div>
+
         <table className="table is-fullwidth is-striped">
           <thead>
             <tr>

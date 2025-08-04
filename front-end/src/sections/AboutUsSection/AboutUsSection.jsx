@@ -1,9 +1,8 @@
-import React from 'react';
 import './AboutUsSection.css';
 
+import AboutUsLogo from '../../Logos/AboutUsLogo.svg';
 import AboutUsImage from '../../Images/AboutUsImage.png';
 import { ContactButton } from '../../components/ContactButton/ContactButton';
-import AboutUsLogo from '../../Logos/AboutUsLogo.svg';
 
 export const AboutUsSection = () => {
   return (
