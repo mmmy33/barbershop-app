@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { API_BASE, getAuthHeaders } from '../../api/config';
 import { AptsCalendar } from '../../components/AptsCalendar/AptsCalendar';
 import { fetchCurrentUser } from '../../api/auth';
-
 import './AppointmentsPage.css';
 
 export function AppointmentsPage() {
@@ -13,7 +12,7 @@ export function AppointmentsPage() {
   const [selectedBarber, setSelectedBarber] = useState(0);
   const [currentBarberId, setCurrentBarberId] = useState(null);
 
-  // Получаем роль и id текущего пользователя
+  // Get current user role and barber ID
   useEffect(() => {
     fetchCurrentUser()
       .then(data => {
@@ -24,7 +23,7 @@ export function AppointmentsPage() {
       .finally(() => setLoadingUser(false));
   }, []);
 
-  // Для админа получаем список барберов
+  // For admin, fetch the list of barbers
   useEffect(() => {
     if (userRole === 'admin') {
       fetch(`${API_BASE}/barbers/`, { headers: getAuthHeaders() })

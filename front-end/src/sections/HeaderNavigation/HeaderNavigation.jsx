@@ -34,11 +34,13 @@ export const HeaderNavigation = ({ navItems }) => {
     <>
       <div className="header-navigation">
         <div className="header-logo-container">
-          <img
-            src={HeaderLogo}
-            alt="Barber Poznan Logo"
-            className="header-logo"
-          />
+          <a href="/">
+            <img
+              src={HeaderLogo}
+              alt="Barber Poznan Logo"
+              className="header-logo"
+            />
+          </a>
         </div>
 
         {/* Full navigation (visible on desktop ≥1025px) */}

@@ -79,9 +79,22 @@
 /* Mobile: ≤ 640px */
 @media (max-width: 640px) {
   .hero-section {
-    background-image: url('../../Images/HeroImageMobile.svg');
+    background-image: url('../../Images/HeroImageMobile.png');
     height: 420px;
     background-position: left center;
+  }
+
+  .hero-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(9,19,30,0) 75%,
+      rgba(9, 19, 30, 0.932) 100%
+    );
+    z-index: 1;
   }
 
   .hero-overlay {

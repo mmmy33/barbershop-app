@@ -32,9 +32,9 @@ export default function UnavailableTime({ barbers }) {
     }
     try {
       const body = {
-        end_datetime: endDatetime ? new Date(endDatetime).toISOString(+3) : null,
+        end_time: endDatetime ? new Date(endDatetime).toISOString() : null,
         reason,
-        start_datetime: startDatetime ? new Date(startDatetime).toISOString(+3) : null,
+        start_time: startDatetime ? new Date(startDatetime).toISOString() : null,
       };
       console.log('POST body:', body);
 

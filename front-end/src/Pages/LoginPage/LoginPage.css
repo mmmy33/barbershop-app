@@ -13,6 +13,11 @@
 
 .section-login input {
   background: rgba(9, 19, 30, 0.72) !important;
+  border-color: #26303E !important;
+}
+
+.section-login input:focus {
+  border-color: #4258ff !important;
 }
 
 .login-form {

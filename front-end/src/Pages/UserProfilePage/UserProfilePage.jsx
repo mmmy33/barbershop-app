@@ -60,6 +60,11 @@ export const UserProfilePage = () => {
         const resUser = await fetch(`${API_BASE}/auth/me`, {
           headers: getAuthHeaders(),
         });
+        if (resUser.status === 401 || resUser.status === 403) {
+          localStorage.removeItem('jwt');
+          navigate('/login');
+          return;
+        }
         if (!resUser.ok) throw new Error(`Auth failed: ${resUser.status}`);
         const userData = await resUser.json();
         setUser(userData);
@@ -67,6 +72,11 @@ export const UserProfilePage = () => {
         const resAppts = await fetch(`${API_BASE}/appointments/me`, {
           headers: getAuthHeaders(),
         });
+        if (resAppts.status === 401 || resAppts.status === 403) {
+          localStorage.removeItem('jwt');
+          navigate('/login');
+          return;
+        }
         if (!resAppts.ok) throw new Error(`Appointments failed: ${resAppts.status}`);
         const apptData = await resAppts.json();
 

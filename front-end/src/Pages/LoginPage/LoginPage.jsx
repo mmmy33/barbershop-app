@@ -1,8 +1,9 @@
-import './LoginPage.css'
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { HeaderNavigation } from '../../sections/HeaderNavigation/HeaderNavigation';
 import { API_BASE } from '../../api/config';
+import { FooterSection } from '../../sections/FooterSection/FooterSection';
+import './LoginPage.css'
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -98,6 +99,7 @@ export function LoginPage() {
           </p>
         </div>
       </div>
+      <FooterSection/>
     </section>
   );
 }

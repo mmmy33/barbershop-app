@@ -13,6 +13,11 @@
 
 .section-registration input {
   background: rgba(9, 19, 30, 0.72) !important;
+  border-color: #26303E !important;
+}
+
+.section-registration input:focus {
+  border-color: #4258ff !important;
 }
 
 .registration-title {
@@ -34,7 +39,12 @@
   color: #fff;
 }
 
-.subtitle-login-link {
+.registration-login-text {
+  text-align: center;
+}
+
+.registration-login-link {
+  color: green;
   text-align: center;
 }
 

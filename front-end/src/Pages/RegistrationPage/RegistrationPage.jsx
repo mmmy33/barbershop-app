@@ -1,7 +1,8 @@
-import './RegistrationPage.css';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { HeaderNavigation } from '../../sections/HeaderNavigation/HeaderNavigation';
+import { FooterSection } from '../../sections/FooterSection/FooterSection';
+import './RegistrationPage.css';
 
 export function RegistrationPage() {
   const [step, setStep] = useState(1);
@@ -12,7 +13,7 @@ export function RegistrationPage() {
   const [code, setCode] = useState('');
   const [error, setError] = useState(null);
 
-  // поля для ошибок
+  // Error fields
   const [nameError, setNameError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -21,7 +22,7 @@ export function RegistrationPage() {
   const navigate = useNavigate();
   const API_BASE = '/api';
 
-  // Валидация
+  // Validation functions
   const validateName = (value) => /^[A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ\s-]+$/.test(value);
   const validatePhone = (value) => /^\+48\d{9}$/.test(value);
   const validatePassword = (value) =>
@@ -29,12 +30,12 @@ export function RegistrationPage() {
   const validateEmail = (value) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
-  // Обработчик регистрации
+  // Registration handler
   async function handleRegister(e) {
     e.preventDefault();
     setError(null);
 
-    // Проверка полей
+    // Validate fields
     let valid = true;
     if (!validateName(name)) {
       setNameError('Imię może zawierać tylko litery i spacje');
@@ -87,7 +88,7 @@ export function RegistrationPage() {
     }
   }
 
-  // Шаг 2: верификация кода
+  // Step 2: Verify email
   async function handleVerify(e) {
     e.preventDefault();
     setError(null);
@@ -247,13 +248,14 @@ export function RegistrationPage() {
           </form>
         }
 
-        <p className="subtitle-login-link">
+        <p className="registration-login-text">
           {step === 1
-            ? <>Już masz konto? <Link to="/login">Zaloguj się</Link></>
+            ? <>Już masz konto? <Link className="registration-login-link" to="/login">Zaloguj się</Link></>
             : <>Nie otrzymałeś kodu? <button onClick={() => setStep(1)} className="button is-text">Spróbuj ponownie</button></>
           }
         </p>
       </div>
+      <FooterSection />
     </section>
   );
 } 

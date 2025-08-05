@@ -129,10 +129,22 @@
   border: 1px solid #C90F12 !important;
 }
 
+.form-cancel-button:hover {
+  color: #f5f5f5;
+  background-color: #C90F12;
+  border: 1px solid #550a0b !important;
+}
+
 .form-submit-button {
   color: #d4d4d4;
   background-color: #2a5daf;
   border: 1px solid #3273dc !important;
+}
+
+.form-submit-button:hover {
+  color: #f5f5f5;
+  background-color: #3273dc;
+  border: 1px solid #1d4ed8 !important;
 }
 
 

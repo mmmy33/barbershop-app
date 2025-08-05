@@ -8,6 +8,17 @@ import './Form.css';
 
 export const Form = ({ closeModal, onSuccess }) => {
   const token = localStorage.getItem('jwt');
+
+  fetch('http://127.0.0.1:8000/api/auth/me', {
+    headers: {
+      Authorization: 'Bearer ' + token // access_token — ваш JWT токен
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log(data.role); // здесь будет роль: "admin", "barber", "user" и т.д.
+  });
+
   //#region useStates
   const [barbers, setBarbers] = useState([]);
 
