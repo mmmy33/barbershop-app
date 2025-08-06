@@ -18,37 +18,11 @@ export const UserProfilePage = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
 
-  const token = localStorage.getItem('jwt');
+  const token = localStorage.getItem('jwt'); 
 
-  // For completed appointments:
-  function handleDeleteCompletedClick(visitId) {
-    setDeleteTarget(visitId);
-    setShowDeleteConfirm(true);
-  }
-
-  async function handleConfirmDeleteCompleted() {
-    setShowDeleteConfirm(false);
-    setShowSuccessModal(true);
-    try {
-      const res = await fetch(
-        `${API_BASE}/appointments/${deleteTarget}`,
-        { method: 'DELETE', headers: getAuthHeaders() }
-      );
-      if (!res.ok) throw new Error(`Failed to delete appointment ${deleteTarget}`);
-      setAppointments(prev => ({
-        ...prev,
-        completed: prev.completed.filter(a => a.id !== deleteTarget),
-      }));
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setDeleteTarget(null);
-    }
-  }
-
-  // Auth check
+  // Load user and appointments
   useEffect(() => {
     if (!token) {
       navigate('/login');
@@ -144,6 +118,30 @@ export const UserProfilePage = () => {
     navigate('/login');
   };
 
+  // Get hidden completed appointments from localStorage
+  function getHiddenCompletedIds(userId) {
+    const key = `hiddenCompleted_${userId}`;
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : [];
+  }
+
+  function addHiddenCompletedId(userId, id) {
+    const key = `hiddenCompleted_${userId}`;
+    const ids = getHiddenCompletedIds(userId);
+    if (!ids.includes(id)) {
+      localStorage.setItem(key, JSON.stringify([...ids, id]));
+    }
+  }
+
+  function handleDeleteCompletedClick(visitId) {
+    addHiddenCompletedId(user.id, visitId);
+    setAppointments(prev => ({
+      ...prev,
+      completed: prev.completed.filter(a => a.id !== visitId),
+    }));
+    setShowDeleteConfirm(true);
+  }
+
   const navItems = useMemo(() => {
       const items = [
         { id: 'main-page', label: 'Main', route: '/' },
@@ -230,40 +228,46 @@ export const UserProfilePage = () => {
         )}
 
         {appointments.completed.length > 0 ? (
-          appointments.completed.slice(0, 5).map((visit, idx) => (
-            <div className="visit-card completed" key={visit.id || idx}>
-              <div className="visit-header">
-                <span>Zakończony</span>
-                <i className="fas fa-check-circle"></i>
+          appointments.completed
+            .filter(visit => !getHiddenCompletedIds(user?.id).includes(visit.id))
+            .slice(0, 5)
+            .map((visit, idx) => (
+              <div className="visit-card completed" key={visit.id || idx}>
+                <div className="visit-header">
+                  <span>Zakończony</span>
+                  <i className="fas fa-check-circle"></i>
+                </div>
+                <div className="visit-body">
+                  <div className="visit-row">
+                    <span className="label">Twój barber:</span>
+                    <span className="value">{visit.barber_name}</span>
+                  </div>
+                  <div className="visit-row">
+                    <span className="label">Service:</span>
+                    <span className="value">{visit.full_service_title}</span>
+                  </div>
+                  <div className="visit-row">
+                    <span className="label">Kiedy:</span>
+                    <span className="value">{visit.scheduled_date}</span>
+                  </div>
+                  <div className="visit-row">
+                    <span className="label">O której godzinie:</span>
+                    <span className="value">{visit.scheduled_time}</span>
+                  </div>
+                </div>
+                <div className="visit-actions">
+                  <button
+                    className="delete-appointment-button"
+                    onClick={() => {
+                      setDeleteTargetId(visit.id);
+                      setShowDeleteConfirm(true);
+                    }}
+                  >
+                    Usuń zapis
+                  </button>
+                </div>
               </div>
-              <div className="visit-body">
-                <div className="visit-row">
-                  <span className="label">Twój barber:</span>
-                  <span className="value">{visit.barber_name}</span>
-                </div>
-                <div className="visit-row">
-                  <span className="label">Service:</span>
-                  <span className="value">{visit.full_service_title}</span>
-                </div>
-                <div className="visit-row">
-                  <span className="label">Kiedy:</span>
-                  <span className="value">{visit.scheduled_date}</span>
-                </div>
-                <div className="visit-row">
-                  <span className="label">O której godzinie:</span>
-                  <span className="value">{visit.scheduled_time}</span>
-                </div>
-              </div>
-              <div className="visit-actions">
-                <button
-                  className="delete-appointment-button"
-                  onClick={() => handleDeleteCompletedClick(visit.id)}
-                >
-                  Usuń zapis
-                </button>
-              </div>
-            </div>
-          ))
+            ))
         ) : (
           <div className="notification is-info">
             Brak zakończonych wizyt
@@ -278,7 +282,11 @@ export const UserProfilePage = () => {
 
       {showDeleteConfirm && (
         <DeleteWarningModal
-          onConfirm={handleConfirmDeleteCompleted}
+          onConfirm={() => {
+            handleDeleteCompletedClick(deleteTargetId);
+            setShowDeleteConfirm(false);
+            setShowSuccessModal(true);
+          }}
           onCancel={() => setShowDeleteConfirm(false)}
         />
       )}

@@ -1,9 +1,9 @@
-import './AdminPage.css';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import 'react-datepicker/dist/react-datepicker.css';
 import { API_BASE, getAuthHeaders } from '../../api/config';
 import { fetchCurrentUser } from '../../api/auth';
+import './AdminPage.css';
 
 import BarberSchedule from './Components/BarbersSchedule/BarbersSchedule';
 import UnavailableTime from './Components/UnavailableTime/UnavailableTime';

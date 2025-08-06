@@ -9,25 +9,11 @@ import './Form.css';
 export const Form = ({ closeModal, onSuccess }) => {
   const token = localStorage.getItem('jwt');
 
-  fetch('http://127.0.0.1:8000/api/auth/me', {
-    headers: {
-      Authorization: 'Bearer ' + token // access_token — ваш JWT токен
-    }
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log(data.role); // здесь будет роль: "admin", "barber", "user" и т.д.
-  });
-
   //#region useStates
+  const [userId, setUserId] = useState(0);
+
   const [barbers, setBarbers] = useState([]);
-
-  const [services, setServices] = useState([]);
-  const [servicesForBarber, setServicesForBarber] = useState([]);
-
-  const [addons, setAddons] = useState([]);
-
-  const [timeslots, setTimeslots] = useState([]);
+  const [hasBarberError, setHasBarberError] = useState(false);
 
   const [name, setName] = useState('');
   const [hasNameError, setHasNameError] = useState(false);
@@ -35,13 +21,19 @@ export const Form = ({ closeModal, onSuccess }) => {
   const [phoneNumber, setPhoneNumber] = useState('+48');
   const [hasPhoneNumberError, setHasPhoneNumberError] = useState(false);
 
-  const [userId, setUserId] = useState(0);
-  const [hasBarberError, setHasBarberError] = useState(false);
+  const [services, setServices] = useState([]);
+  const [servicesForBarber, setServicesForBarber] = useState([]);
 
   const [selectedServiceId, setSelectedServiceId] = useState(0);
   const [hasServiceError, setHasServiceError] = useState(false);
 
+  const [addons, setAddons] = useState([]);
   const [selectedAddons, setSelectedAddons] = useState([]);
+
+  const [timeslots, setTimeslots] = useState([]);
+
+  const [unavailableLoaded, setUnavailableLoaded] = useState(false);
+  const [unavailableTimes, setUnavailableTimes] = useState([]);
 
   const [selectedDate, setSelectedDate] = useState(null);
   const [hasDateError, setHasDateError] = useState(false);
@@ -52,8 +44,6 @@ export const Form = ({ closeModal, onSuccess }) => {
 
   //#region Memoized services
   const mergedServicesForBarber = useMemo(() => {
-    // servicesForBarber: [{ service_id, duration }]
-    // services: [{ id, name, price }]
     return servicesForBarber.map(barberSvc => {
       const svc = services.find(s => Number(s.id) === Number(barberSvc.service_id));
       return svc
@@ -144,7 +134,7 @@ export const Form = ({ closeModal, onSuccess }) => {
   //#endregion
 
   // #region fetches
-    // user fetch
+    // User fetch
     useEffect(() => {
       fetch(`${API_BASE}/auth/me`, { headers: getAuthHeaders() })
         .then(res => res.json())
@@ -155,7 +145,7 @@ export const Form = ({ closeModal, onSuccess }) => {
         .catch(console.error);
     }, []);
 
-    // barbers fetch
+    // Barbers fetch
     useEffect(() => {
       fetch(`${API_BASE}/barbers/`, { headers: getAuthHeaders() })
         .then(res => {
@@ -170,7 +160,7 @@ export const Form = ({ closeModal, onSuccess }) => {
         });
     }, []);
 
-    // services fetch
+    // Services fetch
     useEffect(() => {
       fetch(`${API_BASE}/services/`, { headers: getAuthHeaders() })
         .then(res => {
@@ -189,7 +179,7 @@ export const Form = ({ closeModal, onSuccess }) => {
         });
     }, []);
 
-    // services for barber fetch
+    // Services for barber fetch
     useEffect(() => {
       if (!userId) {
         setServicesForBarber([]);
@@ -224,59 +214,175 @@ export const Form = ({ closeModal, onSuccess }) => {
         });
     }, []);
 
+    // Unavailable times fetch
+    // useEffect(() => {
+    //   if (!userId || !selectedDate) {
+    //     setUnavailableTimes([]);
+    //     return;
+    //   }
+    //   fetch(`${API_BASE}/barbers/${userId}/unavailable-times/`, { headers: getAuthHeaders() })
+    //     .then(res => res.json())
+    //     .then(list => {
+    //       const filtered = (Array.isArray(list) ? list : []).filter(item => {
+    //         const start = new Date(item.start_time || item.start_datetime);
+    //         const end = new Date(item.end_time || item.end_datetime);
+
+    //         const selectedDay = formatLocalDate(selectedDate);
+    //         const startDay = formatLocalDate(start);
+    //         const endDay = formatLocalDate(end);
+
+    //         return selectedDay >= startDay && selectedDay <= endDay;
+    //       });
+    //       console.log('unavailableTimes:', filtered);
+    //       setUnavailableTimes(filtered);
+    //     })
+    //     .catch(() => setUnavailableTimes([]));
+    // }, [userId, selectedDate]);
+
     // Timeslots fetch
+    // useEffect(() => {
+    //   if (!(userId && selectedServiceId && selectedDate)) {
+    //     setTimeslots([]);
+    //     return;
+    //   }
+
+    //   const fetchAvailableSlots = async () => {
+    //     try {
+    //       const qs = new URLSearchParams({
+    //         barber_id: userId,
+    //         service_id: selectedServiceId,
+    //         addon_ids: selectedAddons.length ? selectedAddons.join(',') : "",
+    //         target_date: formatLocalDate(selectedDate),
+    //       });
+
+    //       const res = await fetch(`${API_BASE}/timeslots/available?${qs}`,
+    //         { headers: getAuthHeaders() });
+    //       if (!res.ok) {
+    //         const err = await res.json();
+    //         console.error("Slots fetch failed:", err);
+    //         throw new Error(`Slots fetch status ${res.status}`);
+    //       }
+
+    //       const data = await res.json();
+    //       const rawSlots = Array.isArray(data) ? data : [];
+    //       const pretty = rawSlots.map(dt =>
+    //         dt.split('T')[1].slice(0,5)
+    //       );
+
+    //       console.log('timeslots before filter:', pretty);
+    //       console.log('unavailableTimes for filter:', unavailableTimes);
+
+    //       const filtered = pretty.filter(timeStr => {
+    //         const [h, m] = timeStr.split(':');
+    //         const slotDate = new Date(selectedDate);
+    //         slotDate.setHours(Number(h), Number(m), 0, 0);
+
+    //         if (slotDate < new Date()) return false;
+
+    //         for (const interval of unavailableTimes) {
+    //           const start = new Date(interval.start_time || interval.start_datetime);
+    //           const end = new Date(interval.end_time || interval.end_datetime);
+
+    //           if (slotDate >= start && slotDate < end) return false;
+    //         }
+    //         return true;
+    //       });
+
+    //       setTimeslots(filtered);
+
+    //       // setTimeslots(pretty);
+    //     } catch (e) {
+    //       console.warn('Error fetching available slots:', e);
+    //       setTimeslots([]);
+    //     }
+    //   };
+
+    // fetchAvailableSlots();
+    // }, [userId, selectedServiceId, selectedAddons, selectedDate]);
+
+
     useEffect(() => {
-    if (!(userId && selectedServiceId && selectedDate)) {
-      setTimeslots([]);
-      return;
-    }
+  if (!userId || !selectedDate) {
+    setUnavailableTimes([]);
+    setUnavailableLoaded(false);
+    return;
+  }
+  setUnavailableLoaded(false);
+  fetch(`${API_BASE}/barbers/${userId}/unavailable-times/`, { headers: getAuthHeaders() })
+    .then(res => res.json())
+    .then(list => {
+      const filtered = (Array.isArray(list) ? list : []).filter(item => {
+        const start = new Date(item.start_time || item.start_datetime);
+        const end = new Date(item.end_time || item.end_datetime);
+        const selectedDay = formatLocalDate(selectedDate);
+        const startDay = formatLocalDate(start);
+        const endDay = formatLocalDate(end);
+        return selectedDay >= startDay && selectedDay <= endDay;
+      });
+      setUnavailableTimes(filtered);
+      setUnavailableLoaded(true);
+    })
+    .catch(() => {
+      setUnavailableTimes([]);
+      setUnavailableLoaded(true);
+    });
+}, [userId, selectedDate]);
 
-    const fetchAvailableSlots = async () => {
-      try {
-        const qs = new URLSearchParams({
-          barber_id: userId,
-          service_id: selectedServiceId,
-          addon_ids: selectedAddons.length ? selectedAddons.join(',') : "",
-          target_date: formatLocalDate(selectedDate),
-        });
+useEffect(() => {
+  if (!(userId && selectedServiceId && selectedDate && unavailableLoaded)) {
+    setTimeslots([]);
+    return;
+  }
 
-        const res = await fetch(`${API_BASE}/timeslots/available?${qs}`,
-          { headers: getAuthHeaders() });
-        if (!res.ok) {
-          const err = await res.json();
-          console.error("Slots fetch failed:", err);
-          throw new Error(`Slots fetch status ${res.status}`);
-        }
+  const fetchAvailableSlots = async () => {
+    try {
+      const qs = new URLSearchParams({
+        barber_id: userId,
+        service_id: selectedServiceId,
+        addon_ids: selectedAddons.length ? selectedAddons.join(',') : "",
+        target_date: formatLocalDate(selectedDate),
+      });
 
-        const data = await res.json();
-        const rawSlots = Array.isArray(data) ? data : [];
-        const pretty = rawSlots.map(dt =>
-          dt.split('T')[1].slice(0,5)
-        );
-
-        const now = new Date();
-        const isToday = formatLocalDate(selectedDate) === formatLocalDate(now);
-
-        const filtered = isToday
-          ? pretty.filter(timeStr => {
-              const [h, m] = timeStr.split(':');
-              const slotDate = new Date(selectedDate);
-              slotDate.setHours(Number(h), Number(m), 0, 0);
-              return slotDate > now;
-            })
-          : pretty;
-
-        setTimeslots(filtered);
-
-        // setTimeslots(pretty);
-      } catch (e) {
-        console.warn('Error fetching available slots:', e);
-        setTimeslots([]);
+      const res = await fetch(`${API_BASE}/timeslots/available?${qs}`,
+        { headers: getAuthHeaders() });
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Slots fetch failed:", err);
+        throw new Error(`Slots fetch status ${res.status}`);
       }
-    };
 
-    fetchAvailableSlots();
-    }, [userId, selectedServiceId, selectedAddons, selectedDate]);
+      const data = await res.json();
+      const rawSlots = Array.isArray(data) ? data : [];
+      const pretty = rawSlots.map(dt =>
+        dt.split('T')[1].slice(0,5)
+      );
+
+      const filtered = pretty.filter(timeStr => {
+        const [h, m] = timeStr.split(':');
+        const slotDate = new Date(selectedDate);
+        slotDate.setHours(Number(h), Number(m), 0, 0);
+
+        // Не показываем слоты в прошлом
+        if (slotDate < new Date()) return false;
+
+        // Не показываем слоты, попадающие в недоступный интервал
+        for (const interval of unavailableTimes) {
+          const start = new Date(interval.start_time || interval.start_datetime);
+          const end = new Date(interval.end_time || interval.end_datetime);
+          if (slotDate >= start && slotDate < end) return false;
+        }
+        return true;
+      });
+
+      setTimeslots(filtered);
+    } catch (e) {
+      console.warn('Error fetching available slots:', e);
+      setTimeslots([]);
+    }
+  };
+
+  fetchAvailableSlots();
+}, [userId, selectedServiceId, selectedAddons, selectedDate, unavailableTimes, unavailableLoaded]);
   // #endregion fetches
 
 

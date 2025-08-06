@@ -5,7 +5,7 @@ export default function UnavailableTime({ barbers }) {
   const [selectedBarberId, setSelectedBarberId] = useState('');
   const [startDatetime, setStartDatetime] = useState('');
   const [endDatetime, setEndDatetime] = useState('');
-  const [reason, setReason] = useState('text');
+  const [reason, setReason] = useState('');
   const [unavailableList, setUnavailableList] = useState([]);
   const [error, setError] = useState('');
 
@@ -38,11 +38,10 @@ export default function UnavailableTime({ barbers }) {
       };
       console.log('POST body:', body);
 
-      const res = await fetch(`/api/barbers/${selectedBarberId}/unavailable-times`, {
+      const res = await fetch(`${API_BASE}/barbers/${selectedBarberId}/unavailable-times/`, {
         method: 'POST',
         headers: {
           ...getAuthHeaders(),
-          'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
       });
@@ -61,6 +60,19 @@ export default function UnavailableTime({ barbers }) {
       setUnavailableList(prev => [...prev, data]);
     } catch (e) {
       setError('Failed to create unavailable time');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE}/barbers/unavailable-times/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Failed to delete');
+      setUnavailableList(prev => prev.filter(item => item.id !== id));
+    } catch (e) {
+      setError('Failed to delete unavailable time');
     }
   };
 
@@ -130,7 +142,7 @@ export default function UnavailableTime({ barbers }) {
         <tbody>
           {unavailableList.length === 0 && (
             <tr>
-              <td colSpan={4} style={{ textAlign: 'center', color: '#888' }}>No unavailable times</td>
+              <td colSpan={5} style={{ textAlign: 'center', color: '#888' }}>No unavailable times</td>
             </tr>
           )}
           {unavailableList.map((item) => {
@@ -141,6 +153,18 @@ export default function UnavailableTime({ barbers }) {
                 <td>{item.start_datetime || item.start_time}</td>
                 <td>{item.end_datetime || item.end_time}</td>
                 <td>{item.reason}</td>
+                <td>
+                  <button
+                    className="button is-danger is-small"
+                    onClick={() => handleDelete(item.id)}
+                    style={{ minWidth: 32 }}
+                    title="Delete"
+                  >
+                    <span className="icon is-small">
+                      <i className="fas fa-trash"></i>
+                    </span>
+                  </button>
+                </td>
               </tr>
             );
           })}
