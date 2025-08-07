@@ -55,7 +55,7 @@ export const FooterSection = () => {
                 className="footer-social-link"
                 aria-label="Facebook"
               >
-                <i className="fab fa-facebook-f"></i>
+                <i className="facebook-icon"></i>
               </a>
               <a
                 href="https://www.instagram.com/barber.poznan1?igsh=MWRmNmc2YTJhOWFhag=="
@@ -64,7 +64,7 @@ export const FooterSection = () => {
                 className="footer-social-link"
                 aria-label="Instagram"
               >
-                <i className="fab fa-instagram"></i>
+                <i className="instagram-icon"></i>
               </a>
             </div>
           </div>

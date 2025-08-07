@@ -4,7 +4,6 @@
   margin-top: 150px;
 }
 
-
 .footer-container {
   background: rgb(3, 8, 18);
   font-family: var(--font-secondary);
@@ -38,6 +37,8 @@
   margin-bottom: 16px;
 }
 
+
+
 .footer-icon {
   color: #fefefe;
   margin-right: 12px;
@@ -57,11 +58,27 @@
 .footer-social-link {
   font-size: 24px;
   color: #fefefe;
-  transition: scale 0.3s;
+  transition: scale 0.1s;
 }
 
 .footer-social-link:hover {
-  scale: 1.05;
+  scale: 1.08;
+}
+
+.facebook-icon {
+  background-image: url('../../Icons/FacebookIcon.svg');
+}
+.instagram-icon {
+  background-image: url('../../Icons/InstagramIcon.svg');
+}
+
+.facebook-icon,
+.instagram-icon {
+  display: block;
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 32px;
+  width: 32px;
 }
 
 .footer-hours {
@@ -116,17 +133,23 @@
   }
 
   .footer-socials {
-    gap: 24px;
+    gap: 8px;
+  }
+
+  .facebook-icon {
+    background-image: url('../../Icons/FacebookIconSmall.svg');
+  }
+  .instagram-icon {
+    background-image: url('../../Icons/InstagramIconSmall.svg');
   }
 
   .footer-hours {
     margin-top: 10px;
-    flex-direction: column-reverse;
     gap: 24px;
   }
 
   .footer-hours,
-  .footer-contact-link{
+  .footer-contact-link {
     font-size: 14px;
   }
 
