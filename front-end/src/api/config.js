@@ -1,6 +1,8 @@
-export const API_BASE = import.meta.env.DEV ? '/api' : import.meta.env.VITE_API_BASE;
+const fallback = 'https://barbershop-backend-staging-production.up.railway.app/api';
 
-console.log('API_BASE =', import.meta.env.VITE_API_BASE);
+export const API_BASE = import.meta.env.DEV
+  ? '/api'
+  : (import.meta.env.VITE_API_BASE || fallback);
 
 export const getAuthHeaders = () => ({
   Accept: 'application/json',

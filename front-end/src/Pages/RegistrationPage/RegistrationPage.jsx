@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { HeaderNavigation } from '../../sections/HeaderNavigation/HeaderNavigation';
 import { FooterSection } from '../../sections/FooterSection/FooterSection';
+import { API_BASE, getAuthHeaders } from '../../api/config';
 import './RegistrationPage.css';
 
 export function RegistrationPage() {
@@ -20,7 +21,6 @@ export function RegistrationPage() {
   const [emailError, setEmailError] = useState('');
 
   const navigate = useNavigate();
-  const API_BASE = '/api';
 
   // Validation functions
   const validateName = (value) => /^[A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ\s-]+$/.test(value);
@@ -62,7 +62,7 @@ export function RegistrationPage() {
     try {
       const res = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           name,
           email,
