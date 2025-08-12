@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { API_BASE, getAuthHeaders } from '../../api/config'
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -18,9 +19,8 @@ export function AptsCalendar({ barberId, userRole }) {
   // Get full list of barbers for admin
   useEffect(() => {
     if (userRole === 'admin') {
-      const token = localStorage.getItem('jwt');
-      fetch('/api/barbers/', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      fetch(`${API_BASE}/barbers/`, {
+        headers: getAuthHeaders()
       })
         .then(res => res.json())
         .then(data => setBarbers(Array.isArray(data) ? data : (data.barbers || [])))
@@ -31,18 +31,17 @@ export function AptsCalendar({ barberId, userRole }) {
   // Get appointments for selected barber
   useEffect(() => {
     let url;
-    const token = localStorage.getItem('jwt');
     if (userRole === 'admin') {
       if (!selectedBarberId) return;
-      url = `/api/appointments/barber/${selectedBarberId}`;
+      url = `${API_BASE}/appointments/barber/${selectedBarberId}`;
     } else if (userRole === 'barber') {
-      url = `/api/appointments/me/barber`;
+      url = `${API_BASE}/appointments/me/barber`;
     } else {
       return;
     }
 
     fetch(url, {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: getAuthHeaders()
     })
       .then(res => {
         if (!res.ok) throw new Error(`Server error ${res.status}`)
@@ -98,11 +97,11 @@ export function AptsCalendar({ barberId, userRole }) {
     console.log('PATCH payload:', payload);
 
     try {
-      const res = await fetch(`/api/appointments/${appointmentId}`, {
+      const res = await fetch(`${API_BASE}/appointments/${appointmentId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          ...getAuthHeaders()
         },
         body: JSON.stringify(payload)
       });
@@ -156,10 +155,9 @@ const handleDeleteByPhone = async () => {
   }
   setDeleteLoading(true);
   try {
-    const token = localStorage.getItem('jwt');
     // Get appointments for the selected barber
-    const res = await fetch(`/api/appointments/barber/${selectedBarberId || barberId}`, {
-      headers: { Authorization: `Bearer ${token}` }
+    const res = await fetch(`${API_BASE}/appointments/barber/${selectedBarberId || barberId}`, {
+      headers: getAuthHeaders()
     });
     const appointments = await res.json();
 
@@ -176,9 +174,9 @@ const handleDeleteByPhone = async () => {
 
     // Delete only the nearest upcoming appointment
     const toDelete = upcoming[0];
-    const delRes = await fetch(`/api/appointments/${toDelete.id}`, {
+    const delRes = await fetch(`${API_BASE}/appointments/${toDelete.id}`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` }
+      headers: getAuthHeaders()
     });
 
     if (delRes.ok) {
