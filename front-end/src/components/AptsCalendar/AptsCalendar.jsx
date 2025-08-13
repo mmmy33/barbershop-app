@@ -85,7 +85,6 @@ export function AptsCalendar({ barberId, userRole }) {
 
   // Handle event drop (rescheduling)
   const handleEventDrop = async info => {
-    const token = localStorage.getItem('jwt');
     const appointmentId = info.event.id;
     const scheduledTime = info.event.start.toISOString();
 
@@ -111,7 +110,7 @@ export function AptsCalendar({ barberId, userRole }) {
       if (!res.ok) {
         const errText = await res.text();
         console.error('PATCH error:', errText);
-        alert('Помилка зберігання. Відкат');
+        alert('Błąd połączenia. Odwracanie zmian.');
         info.revert();
       } else {
         const data = await res.json();
@@ -119,7 +118,7 @@ export function AptsCalendar({ barberId, userRole }) {
       }
     } catch (err) {
       console.error('PATCH exception:', err);
-      alert('Помилка зберігання. Відкат');
+      alert('Błąd połączenia. Odwracanie zmian.');
       info.revert();
     }
   };
@@ -182,6 +181,7 @@ const handleDeleteByPhone = async () => {
     if (delRes.ok) {
       alert("Appointment deleted successfully !");
       setEvents(events => events.filter(ev => ev.id !== toDelete.id.toString()));
+      setInputPhoneNumber('+48');
     } else {
       alert("Error deleting appointment.");
     }

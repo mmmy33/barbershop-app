@@ -108,15 +108,13 @@ export const HeaderNavigation = ({ navItems }) => {
                   key={item.id}
                   className="burger-menu-nav-button"
                   onClick={() => {
+                    closeMenu();
                     if (item.action) {
                       item.action();
-                      closeMenu();
                     } else if (item.route) {
                       navigate(item.route);
-                      closeMenu();
                     } else if (item.href) {
-                      handleScrollToSection(item.href);
-                      closeMenu();
+                      setTimeout(() => handleScrollToSection(item.href), 100);
                     }
                   }}
                 >
