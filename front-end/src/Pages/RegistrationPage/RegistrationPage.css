@@ -12,6 +12,7 @@
 }
 
 .section-registration input {
+  color: #fff !important;
   background: rgba(9, 19, 30, 0.72) !important;
   border-color: #26303E !important;
 }
@@ -48,13 +49,21 @@
   text-align: center;
 }
 
+.verification-resend {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
 @media (max-width: 1024px) and (min-width: 641px) {}
 @media (max-width: 640px) {
   .registration-container {
     margin: 16px;
     padding: 24px 20px;
   }
-  
+
   .registration-form {
     padding: 20px 20px 10px 20px;
   }
@@ -84,4 +93,7 @@
     width: 215px;
   }
 
+  .verification-resend {
+    flex-direction: column;
+  }
 }

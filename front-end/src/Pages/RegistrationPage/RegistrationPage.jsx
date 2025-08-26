@@ -92,14 +92,33 @@ export function RegistrationPage() {
   async function handleVerify(e) {
     e.preventDefault();
     setError(null);
+
     try {
       const params = new URLSearchParams({ email, code });
-      const res = await fetch(`${API_BASE}/auth/verify-email?${params}`, {
-        method: 'POST'
+      const verifyRes = await fetch(`${API_BASE}/auth/verify-email?${params}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
       });
-      const text = await res.text();
-      if (res.status !== 200) throw new Error(text || 'Verification failed');
-      navigate('/login');
+
+      const verifyText = await verifyRes.text();
+      if (!verifyRes.ok) throw new Error(verifyText || 'Verification failed');
+
+      const loginRes = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const loginJson = await loginRes.json();
+      if (!loginRes.ok) throw new Error(loginJson?.detail || 'Login failed');
+
+      if (loginJson?.access_token) {
+        localStorage.setItem('jwt', loginJson.access_token);
+      } else if (loginJson?.jwt) {
+        localStorage.setItem('jwt', loginJson.jwt);
+      }
+
+      navigate('/profile', { replace: true });
     } catch (err) {
       setError(err.message);
     }
@@ -117,7 +136,7 @@ export function RegistrationPage() {
         </h1>
 
         {error && (
-          <div className="notification is-danger">
+          <div className="notification is-danger" style={{marginTop: '20px'}}>
             {error}
           </div>
         )}
@@ -251,7 +270,12 @@ export function RegistrationPage() {
         <p className="registration-login-text">
           {step === 1
             ? <>Już masz konto? <Link className="registration-login-link" to="/login">Zaloguj się</Link></>
-            : <>Nie otrzymałeś kodu? <button onClick={() => setStep(1)} className="button is-text">Spróbuj ponownie</button></>
+            : <>
+                <div className="verification-resend">
+                  <p className="verification-resend-text">Nie otrzymałeś kodu?</p>
+                  <button onClick={() => setStep(1)} className="button is-text">Spróbuj ponownie</button>
+                </div>
+              </>
           }
         </p>
       </div>

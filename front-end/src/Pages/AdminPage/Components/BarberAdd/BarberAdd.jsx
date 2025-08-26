@@ -89,18 +89,6 @@ export default function BarberAdd({ onBarberAdded }) {
             </div>
           </div>
           <div className="field">
-            <label className="label">Avatar URL (необязательно)</label>
-            <div className="control">
-              <input
-                className="input"
-                type="text"
-                value={avatarUrl}
-                onChange={e => setAvatarUrl(e.target.value)}
-                placeholder="https://..."
-              />
-            </div>
-          </div>
-          <div className="field">
             <button className="button is-primary" type="submit">Add Barber</button>
           </div>
           {addError && <div className="notification is-danger">{addError}</div>}
@@ -115,8 +103,6 @@ export default function BarberAdd({ onBarberAdded }) {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Email</th>
-                <th>Avatar</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -124,13 +110,6 @@ export default function BarberAdd({ onBarberAdded }) {
               {barbers.map(barber => (
                 <tr key={barber.id}>
                   <td>{barber.name}</td>
-                  <td>{barber.email}</td>
-                  <td>
-                    {barber.avatar_url
-                      ? <img src={barber.avatar_url} alt="avatar" style={{width: 32, height: 32, borderRadius: '50%'}} />
-                      : <span className="has-text-grey">-</span>
-                    }
-                  </td>
                   <td>
                     <button
                       className="button is-small is-danger"

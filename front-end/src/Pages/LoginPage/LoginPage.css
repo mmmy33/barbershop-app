@@ -6,6 +6,7 @@
 }
 
 .section-login input {
+  color: #fff !important;
   background: rgba(9, 19, 30, 0.72) !important;
   border-color: #26303E !important;
 }

@@ -1,0 +1,26 @@
+.admin-section {
+  color: #fff !important;
+}
+
+.admin-section h2 {
+  color: #fff !important;
+}
+
+.admin-section .box,
+.admin-section .label,
+.admin-section .input,
+.admin-section th,
+.admin-section td,
+.admin-section select {
+  background-color: #14161a;
+  color: #fff !important;
+}
+
+.admin-section .table .table, .table td, .table th {
+  border-color: #353a46!important;
+}
+
+.home-button {
+  margin-bottom: 20px;
+}
+

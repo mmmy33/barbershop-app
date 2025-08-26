@@ -147,49 +147,49 @@ export function AptsCalendar({ barberId, userRole }) {
     )
   }
 
-const handleDeleteByPhone = async () => {
-  if (!inputPhoneNumber) {
-    alert("Wpisz numer telefonu klienta!");
-    return;
-  }
-  setDeleteLoading(true);
-  try {
-    // Get appointments for the selected barber
-    const res = await fetch(`${API_BASE}/appointments/barber/${selectedBarberId || barberId}`, {
-      headers: getAuthHeaders()
-    });
-    const appointments = await res.json();
-
-    // Find upcoming appointments for the given phone number
-    const now = new Date();
-    const upcoming = appointments
-      .filter(a => a.phone_number === inputPhoneNumber && new Date(a.scheduled_time) > now);
-
-    if (upcoming.length === 0) {
-      alert("No upcoming appointment found with this phone number.");
-      setDeleteLoading(false);
+  const handleDeleteByPhone = async () => {
+    if (!inputPhoneNumber) {
+      alert("Wpisz numer telefonu klienta!");
       return;
     }
+    setDeleteLoading(true);
+    try {
+      // Get appointments for the selected barber
+      const res = await fetch(`${API_BASE}/appointments/barber/${selectedBarberId || barberId}`, {
+        headers: getAuthHeaders()
+      });
+      const appointments = await res.json();
 
-    // Delete only the nearest upcoming appointment
-    const toDelete = upcoming[0];
-    const delRes = await fetch(`${API_BASE}/appointments/${toDelete.id}`, {
-      method: "DELETE",
-      headers: getAuthHeaders()
-    });
+      // Find upcoming appointments for the given phone number
+      const now = new Date();
+      const upcoming = appointments
+        .filter(a => a.phone_number === inputPhoneNumber && new Date(a.scheduled_time) > now);
 
-    if (delRes.ok) {
-      alert("Appointment deleted successfully !");
-      setEvents(events => events.filter(ev => ev.id !== toDelete.id.toString()));
-      setInputPhoneNumber('+48');
-    } else {
-      alert("Error deleting appointment.");
+      if (upcoming.length === 0) {
+        alert("No upcoming appointment found with this phone number.");
+        setDeleteLoading(false);
+        return;
+      }
+
+      // Delete only the nearest upcoming appointment
+      const toDelete = upcoming[0];
+      const delRes = await fetch(`${API_BASE}/appointments/${toDelete.id}`, {
+        method: "DELETE",
+        headers: getAuthHeaders()
+      });
+
+      if (delRes.ok) {
+        alert("Appointment deleted successfully !");
+        setEvents(events => events.filter(ev => ev.id !== toDelete.id.toString()));
+        setInputPhoneNumber('+48');
+      } else {
+        alert("Error deleting appointment.");
+      }
+    } catch (err) {
+      alert("Connection error.");
     }
-  } catch (err) {
-    alert("Connection error.");
-  }
-  setDeleteLoading(false);
-};
+    setDeleteLoading(false);
+  };
 
   return (
     <div>

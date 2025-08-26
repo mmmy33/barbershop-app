@@ -63,18 +63,8 @@ export const AdminPage = () => {
 
   return (
     <div className="container">
-      <section className="section">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '24px'
-          }}
-        >
-          <h1 className="title">ADMIN PANEL</h1>
-          <button className="button is-link" onClick={() => navigate('/')}>Home</button>
-        </div>
+      <section className="section admin-section">
+        <button className="button is-link home-button" onClick={() => navigate('/')}>Home</button>
 
         {error && <div className="notification is-danger">{error}</div>}
 

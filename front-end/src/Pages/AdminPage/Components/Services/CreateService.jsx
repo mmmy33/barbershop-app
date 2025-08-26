@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { API_BASE, getAuthHeaders } from '../../../../api/config';
 
 export default function CreateService({ barbers }) {
@@ -19,7 +19,7 @@ export default function CreateService({ barbers }) {
       .then(setServices)
       .catch(() => setError('Failed to load services'));
 
-    // Получаем связи для каждого барбера
+    // Fetching links for each barber
     Promise.all(
       barbers.map(barber =>
         fetch(`${API_BASE}/barbers/${barber.id}/services`, { headers: getAuthHeaders() })
@@ -34,12 +34,11 @@ export default function CreateService({ barbers }) {
           .catch(() => [])
       )
     ).then(results => {
-      // results — массив массивов связей, объединяем в один
       setBarberServices(results.flat());
     }).catch(() => setError('Failed to load barber-service links'));
   }, [barbers]);
 
-  // 1. Создание сервиса (без duration)
+  // 1. Creating service (without duration)
   const handleCreateService = async (e) => {
     e.preventDefault();
     setError('');
@@ -67,7 +66,7 @@ export default function CreateService({ barbers }) {
     }
   };
 
-  // 2. Привязка сервиса к барберу с duration
+  // 2. Assign service to barber
   const handleAssignService = async (e) => {
     e.preventDefault();
     setError('');
@@ -97,7 +96,7 @@ export default function CreateService({ barbers }) {
       setAssignMessage('Service assigned successfully');
       setTimeout(() => setAssignMessage(''), 2000);
 
-      // Обновить связи
+      // Refresh links
       fetch(`${API_BASE}/barbers/`, { headers: getAuthHeaders() })
         .then(res => res.json())
         .then(barbersData => {
@@ -122,7 +121,7 @@ export default function CreateService({ barbers }) {
     }
   };
 
-  // Удаление сервиса (и связей)
+  // Deleting service (and links)
   const deleteService = async (serviceId) => {
     setError('');
     try {
@@ -138,7 +137,7 @@ export default function CreateService({ barbers }) {
     }
   };
 
-  // Удаление связи барбер-сервис
+  // Deleting barber-service link
   const deleteBarberService = async (barberId, serviceId) => {
     setError('');
     try {
@@ -256,7 +255,7 @@ export default function CreateService({ barbers }) {
         </form>
       </div>
 
-      {/* Таблица сервисов и связей */}
+      {/* Services table */}
       <div className="box">
         <h2 className="subtitle">Existing Services</h2>
         <table className="table is-fullwidth is-striped">
@@ -270,7 +269,7 @@ export default function CreateService({ barbers }) {
           </thead>
           <tbody>
             {services.map(service => {
-              // Найти всех барберов, которые делают этот сервис
+              // Find all barbers who perform this service
               const assignedBarbers = barberServices
                 .filter(bs => bs.service_id === service.id)
                 .map(bs => {
