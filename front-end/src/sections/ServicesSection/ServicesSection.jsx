@@ -6,11 +6,11 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 
 import ServiceImg1 from '../../Images/Service-1.png';
-import ServiceImg2 from '../../Images/Service-1.png';
-import ServiceImg3 from '../../Images/Service-1.png';
-import ServiceImg4 from '../../Images/Service-1.png';
-import ServiceImg5 from '../../Images/Service-1.png';
-import ServiceImg6 from '../../Images/Service-1.png';
+import ServiceImg2 from '../../Images/Service-2.jpg';
+import ServiceImg3 from '../../Images/Service-3.jpg';
+import ServiceImg4 from '../../Images/Service-4.jpg';
+import ServiceImg5 from '../../Images/Service-5.jpg';
+import ServiceImg6 from '../../Images/Service-6.jpg';
 
 export const ServicesSection = () => {
   const services = [

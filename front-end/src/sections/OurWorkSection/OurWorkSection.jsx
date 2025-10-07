@@ -7,16 +7,20 @@ import OurWorkImg3 from '../../Images/OurWorkImg-3.png';
 import OurWorkImg4 from '../../Images/OurWorkImg-4.png';
 import OurWorkImg5 from '../../Images/OurWorkImg-5.png';
 import OurWorkImg6 from '../../Images/OurWorkImg-6.png';
-import { Pagination } from 'swiper/modules';
+
+import mobileOurWorkImg1 from '../../Images/OW-M-1.jpg';
+import mobileOurWorkImg2 from '../../Images/OW-M-2.jpg';
+import mobileOurWorkImg3 from '../../Images/OW-M-3.jpg';
+import mobileOurWorkImg4 from '../../Images/OW-M-4.jpg';
+import mobileOurWorkImg5 from '../../Images/OW-M-5.jpg';
 
 export const OurWorkSection = () => {
-  const workImages = [
-    { id: 1, src: OurWorkImg1, alt: 'Work 1' },
-    { id: 2, src: OurWorkImg2, alt: 'Work 2' },
-    { id: 3, src: OurWorkImg3, alt: 'Work 3' },
-    { id: 4, src: OurWorkImg4, alt: 'Work 4' },
-    { id: 5, src: OurWorkImg5, alt: 'Work 5' },
-    { id: 6, src: OurWorkImg6, alt: 'Work 6' },
+  const mobileWorkImages = [
+    { id: 1, src: mobileOurWorkImg1, alt: 'Work 1' },
+    { id: 2, src: mobileOurWorkImg2, alt: 'Work 2' },
+    { id: 3, src: mobileOurWorkImg3, alt: 'Work 3' },
+    { id: 4, src: mobileOurWorkImg4, alt: 'Work 4' },
+    { id: 5, src: mobileOurWorkImg5, alt: 'Work 5' },
   ];
 
   useEffect(() => {
@@ -54,7 +58,7 @@ export const OurWorkSection = () => {
       <div className="work-swiper our-work-splide">
         <div className="splide__track">
           <ul className="splide__list">
-            {workImages.map((img) => (
+            {mobileWorkImages.map((img) => (
               <li key={img.id} className="our-work-slide splide__slide">
                 <div className="our-work-slide-wrapper">
                   <img src={img.src} alt={img.alt} className="our-work-img slide-img" />
